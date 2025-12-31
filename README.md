@@ -128,7 +128,7 @@ knitr::knit("Quantum_Field_Theory_in_R.Rmd")
 
 #### Or render to HTML  
 rmarkdown::render("Quantum_Field_Theory_in_R.Rmd")  
-```  
+
 #### Document Structure  
 
 All documents follow a consistent professional format:  
