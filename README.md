@@ -2,11 +2,11 @@
 
 ## A Comprehensive Collection of Quantum Physics and Advanced Topics in R
 
-![Static Badge](https://img.shields.io/badge/Author-John%20Akwei-blue):badgeContent)  
+![Static Badge](https://img.shields.io/badge/Author-John%20Akwei-blue)  
 
-![Static Badge](https://img.shields.io/badge/Language-R-276DC3?logo=r):badgeContent)  
+![Static Badge](https://img.shields.io/badge/Language-R-276DC3?logo=r)  
 
-![Static Badge](https://img.shields.io/badge/License-MIT-green.svg):badgeContent)  
+![Static Badge](https://img.shields.io/badge/License-MIT-green.svg)  
 
 ## Overview
 
