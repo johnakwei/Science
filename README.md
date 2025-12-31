@@ -196,7 +196,7 @@ Contributions, suggestions, and discussions are welcome! Please feel free to:
 
 #### Citation  
 If you use these materials in your research or teaching, please cite:  
-```  
+
 Akwei, J. (2025). Science: Quantum Physics and Advanced Topics in R.  
 GitHub repository: https://github.com/johnakwei/Science  
 Author  
