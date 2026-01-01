@@ -6,6 +6,8 @@
 
 ![Static Badge](https://img.shields.io/badge/Language-R-276DC3?logo=r)  
 
+![Static Badge](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)  
+
 ![Static Badge](https://img.shields.io/badge/License-MIT-green.svg)  
 
 ## Overview
@@ -105,9 +107,30 @@ rinstall.packages(c(
   "tidyr",        # Data tidying  
   "latex2exp"     # LaTeX expressions in plots  
 ))  
+  
+#### 📚 ArXiv Quantum Physics Triage Agent
 
-Usage  
-Viewing Documents  
+File: arxiv_quantum_agent.py
+
+by John Akwei, Senior Data Scientist, ContextBase, https://contextbase.github.io  
+
+This AI agent solves the problem of information overload in quantum physics research by automatically retrieving, analyzing, and summarizing recent papers from ArXiv.  
+
+Architecture: Multi-agent sequential pipeline with 5 specialized agents  
+
+Paper Retriever Agent: Fetches papers from ArXiv API  
+Abstract Analyzer Agent: Extracts key claims from abstracts  
+Mathematical Notation Identifier: Identifies important equations  
+Relevance Scorer Agent: Ranks papers by relevance  
+Summary Generator Agent: Creates comprehensive summaries  
+
+Requirements Demonstrated:
+✅ Multi-agent system (Sequential agents)
+✅ Custom tools (ArXiv API, LaTeX parser)
+✅ Built-in tools (Google Search, Code Execution)
+✅ Sessions & Memory (InMemorySessionService, user preferences)
+✅ Observability (LoggingPlugin, custom metrics)
+✅ Bonus: Gemini integration, deployment-ready architecture
 
 Clone the repository:  
 bashgit clone https://github.com/johnakwei/Science.git  
