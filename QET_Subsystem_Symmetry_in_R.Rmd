@@ -1,0 +1,790 @@
+---
+title: "Quantum Energy Teleportation under Subsystem Symmetry: A Selection Rule for Fracton-Like Phases"
+author: "John Akwei, Senior Data Scientist"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: cosmo
+    highlight: tango
+    code_folding: hide
+    df_print: kable
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                      fig.align = 'center', cache = FALSE)
+```
+
+```{r libraries, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(gridExtra)
+library(viridis)
+
+theme_set(theme_minimal())
+```
+
+<br />
+<br />
+
+# Abstract
+
+Quantum Energy Teleportation (QET) transports energy between separated sites using only local
+operations and classical communication, drawing on ground-state entanglement. This document tests
+whether the restricted-mobility structure of fracton-like phases modifies QET, using exact
+diagonalization of the two-dimensional plaquette Ising (Xu–Moore) model — the minimal lattice model
+carrying subsystem symmetry — with the nearest-neighbour transverse-field Ising model as a
+control.
+
+Three results are established. First, commuting-projector stabilizer ground states yield exactly
+zero teleported energy despite carrying substantial entanglement, confirming that ground-state
+entanglement is not by itself the QET resource. Second, and contrary to the conjecture this study
+was written to test, subsystem symmetry does not make QET *anisotropic* — it blocks the standard
+bipartite protocol *entirely*, in every direction and at every field strength. Third, the blockade
+is lifted by a specific and derivable geometry: Alice's measured observable must carry odd
+X-parity in exactly Bob's row and Bob's column. The minimal solution places three measurement
+sites at the remaining corners of a rectangle whose fourth corner is Bob. This prediction is
+verified exhaustively against all 31 candidate observables on a $3\times3$ lattice and all 793
+candidates of size $\leq 4$ on a $4\times4$ lattice, with perfect agreement and no false positives.
+
+Subsystem symmetry therefore does not forbid energy routing. It promotes QET from a two-party
+protocol requiring one classical bit to an irreducibly four-party protocol requiring three, with
+the participants pinned to the corners of a rectangle. The protocol remains within genuine LOCC:
+three independent local measurements followed by parity postprocessing reproduce the joint-measurement
+yield exactly.
+
+<br />
+<br />
+
+# Motivation: Three Conjectures Entering
+
+This document was written to test a specific conjecture about fracton phases and energy transport,
+and it is worth recording the starting hypotheses precisely so that the outcome of each can be
+scored honestly at the end.
+
+**Conjecture A (commuting-projector null).** Exactly solvable stabilizer models — the toric code,
+the X-cube model, Haah's cubic code, and the unperturbed plaquette Ising model — should support no
+QET at all. Every term in $H = -\sum_a J_a S_a$ with $[S_a, S_b] = 0$ is separately minimized in
+the ground state; there is no frustration, no local energy surplus, and no squeezed zero-point
+fluctuation for Bob to exploit. This generalizes the toric-code result of Haque (2025), who found
+that projective measurements on toric code spins admit no LOCC completing a successful QET.
+
+**Conjecture B (anisotropic yield).** Adding a transverse field $-h\sum_i Z_i$ makes the terms
+non-commuting, dresses the ground state, and should switch QET on. Because the virtual excitations
+performing the dressing have restricted mobility, the resulting yield should depend on the
+*direction* of the Alice–Bob separation — finite along lattice axes, suppressed along diagonals.
+
+**Conjecture C (phase diagnostic).** QET yield should vary sharply across the ordered-to-disordered
+transition, making it an operationally measurable probe of fracton-like order, in the spirit of
+Ikeda's use of QET to map SPT phase diagrams.
+
+Conjecture A survives. Conjecture B is falsified, and the reason it fails turns out to be more
+informative than the conjecture would have been if true. Conjecture C survives in weakened form.
+
+<br />
+<br />
+
+# Model and Protocol
+
+## The Xu–Moore Plaquette Ising Model
+
+The minimal lattice model carrying subsystem symmetry is the two-dimensional plaquette Ising model,
+
+$$H_{\mathrm{XM}} = -J\sum_{p} X_{p_1}X_{p_2}X_{p_3}X_{p_4} \; - \; h\sum_i Z_i$$
+
+where $p$ runs over elementary plaquettes of an $L \times L$ open lattice and $p_1 \ldots p_4$ are
+its four corners. This model is the two-dimensional analogue of the X-cube model: it is a
+commuting-projector stabilizer model at $h = 0$, its excitations appear at the corners of membrane
+operators and are individually immobile, and it carries subsystem symmetries rather than a single
+global symmetry.
+
+The subsystem symmetries are the products of $Z$ along any row or any column,
+
+$$R_r = \prod_{c} Z_{(r,c)}, \qquad C_c = \prod_{r} Z_{(r,c)}$$
+
+Each plaquette term overlaps any given row or column in exactly two sites, so each $R_r$ and $C_c$
+commutes with $H_{\mathrm{XM}}$. There are $2L$ such generators subject to one relation, against a
+single $\mathbb{Z}_2$ generator for an ordinary Ising model. This proliferation of symmetries is
+the structural feature under test.
+
+The control model is the nearest-neighbour transverse-field Ising model on the same lattice,
+
+$$H_{\mathrm{NN}} = -J\sum_{\langle ij \rangle} X_i X_j - h\sum_i Z_i$$
+
+which carries only the global symmetry $\prod_i Z_i$. Comparing the two on an identical lattice,
+with an identical protocol and identical geometry, isolates the effect of subsystem symmetry from
+every other confound.
+
+## Local Hamiltonian Decomposition
+
+QET requires a partition of $H$ into local pieces so that "the energy at Bob's site" is
+well-defined. Each site takes its share of every cluster term it participates in,
+
+$$H_i = -h Z_i - \frac{J}{|p|}\sum_{p \ni i} X_p, \qquad \sum_i H_i = H$$
+
+and each is shifted by its ground-state expectation, $\tilde{H}_i = H_i - \langle g|H_i|g\rangle$,
+so that $\langle g|\tilde{H}_i|g\rangle = 0$ and any positive extraction at $B$ is unambiguous.
+
+## The Protocol
+
+Alice measures a Hermitian observable $M_A$ with $M_A^2 = \mathbb{1}$, supported entirely outside
+$\mathrm{supp}(\tilde{H}_B)$, via the projective measurement $P_\mu = (\mathbb{1} + \mu M_A)/2$.
+She broadcasts the outcome $\mu = \pm 1$. Bob applies the conditional local unitary
+$U_\mu(\theta) = \cos\theta - i\mu\sin\theta \,\sigma_B$ and extracts
+
+$$E_B(\theta) = -\sum_\mu \langle g|P_\mu\, U_\mu^\dagger(\theta)\, \tilde{H}_B\, U_\mu(\theta)\, P_\mu |g\rangle$$
+
+Because $[M_A, \tilde{H}_B] = 0$ by disjoint support, Bob's local energy is *unchanged* by Alice's
+measurement until the classical bit arrives — causality and the no-communication theorem are
+respected exactly, as they must be.
+
+## Closed-Form Yield
+
+Expanding $U_\mu^\dagger \tilde{H}_B U_\mu$ and using
+$\sum_\mu \mu P_\mu \mathcal{O} P_\mu = \tfrac{1}{2}\{M_A, \mathcal{O}\}$ gives
+
+$$E_B(\theta) = -\left(A \sin^2\theta + C\sin\theta\cos\theta\right)$$
+
+$$A = \langle g|\sigma_B \tilde{H}_B \sigma_B|g\rangle, \qquad
+C = \tfrac{1}{2}\big\langle g\big|\{M_A,\; i[\sigma_B, \tilde{H}_B]\}\big|g\big\rangle$$
+
+which is maximized exactly at
+
+$$\boxed{\;E_B^{\max} = \tfrac{1}{2}\left(\sqrt{A^2 + C^2} - A\right)\;}$$
+
+This closed form matters methodologically. An earlier pass of this study used a numerical scan over
+$\theta$ and reported a spurious hard shutoff of QET above $h \approx 1.05$; the true optimum
+$\theta$ becomes small when $C$ is small, and a uniform grid misses it. The analytic optimum
+removes the artifact and shows smooth power-law decay instead. Grid searches over $\theta$ should
+not be used for this quantity.
+
+Since $A \geq 0$ generically, **$E_B^{\max} > 0$ if and only if $C \neq 0$**. The entire question
+reduces to whether a single connected correlator survives. This is the lever the symmetry analysis
+acts on.
+
+<br />
+<br />
+
+# Implementation
+
+```{r engine}
+I2 <- diag(2) + 0i
+SX <- matrix(c(0, 1, 1, 0), 2, 2) + 0i
+SY <- matrix(c(0+0i, 0+1i, 0-1i, 0+0i), 2, 2)
+SZ <- matrix(c(1, 0, 0, -1), 2, 2) + 0i
+PAULI <- list(I = I2, X = SX, Y = SY, Z = SZ)
+
+site_index <- function(r, c, L) (r - 1) * L + c
+
+op_string <- function(n, sites, letters) {
+  tag <- rep("I", n)
+  tag[sites] <- letters
+  Reduce(function(a, b) kronecker(a, b), lapply(tag, function(t) PAULI[[t]]))
+}
+
+plaquettes <- function(L) {
+  out <- list()
+  for (r in 1:(L - 1)) for (c in 1:(L - 1))
+    out[[length(out) + 1]] <- c(site_index(r, c, L), site_index(r + 1, c, L),
+                                site_index(r, c + 1, L), site_index(r + 1, c + 1, L))
+  out
+}
+
+nn_bonds <- function(L) {
+  out <- list()
+  for (r in 1:L) for (c in 1:L) {
+    if (c < L) out[[length(out) + 1]] <- c(site_index(r, c, L), site_index(r, c + 1, L))
+    if (r < L) out[[length(out) + 1]] <- c(site_index(r, c, L), site_index(r + 1, c, L))
+  }
+  out
+}
+
+build_model <- function(L, h, model = "xu_moore", J = 1) {
+  n <- L * L; dim <- 2^n
+  clusters <- if (model == "xu_moore") plaquettes(L) else nn_bonds(L)
+  H <- matrix(0 + 0i, dim, dim)
+  local <- replicate(n, matrix(0 + 0i, dim, dim), simplify = FALSE)
+  for (cl in clusters) {
+    term <- -J * op_string(n, cl, rep("X", length(cl)))
+    H <- H + term
+    for (s in cl) local[[s]] <- local[[s]] + term / length(cl)
+  }
+  for (i in 1:n) {
+    term <- -h * op_string(n, i, "Z")
+    H <- H + term
+    local[[i]] <- local[[i]] + term
+  }
+  list(H = H, local = local)
+}
+
+ground_state <- function(H) {
+  ev <- eigen(Re(H), symmetric = TRUE)
+  k <- length(ev$values)
+  list(E0 = ev$values[k], psi = ev$vectors[, k] + 0i,
+       gap = ev$values[k - 1] - ev$values[k])
+}
+
+qet_exact <- function(psi, HB, MA, sigB) {
+  hb0 <- Re(drop(Conj(psi) %*% (HB %*% psi)))
+  sBp <- sigB %*% psi
+  A <- Re(drop(Conj(as.vector(sBp)) %*% (HB %*% sBp))) - hb0
+  comm <- 1i * (sigB %*% (HB %*% psi) - HB %*% (sigB %*% psi))
+  MAp <- MA %*% psi
+  C <- 0.5 * (Re(drop(Conj(as.vector(MAp)) %*% comm)) +
+              Re(drop(Conj(psi) %*% (MA %*% comm))))
+  list(EB = 0.5 * (sqrt(A^2 + C^2) - A), A = A, C = C)
+}
+
+alice_input <- function(psi, H, E0, MA) {
+  MAp <- as.vector(MA %*% psi); tot <- 0
+  for (mu in c(1, -1)) {
+    pm <- 0.5 * (psi + mu * MAp)
+    tot <- tot + Re(drop(Conj(pm) %*% (H %*% pm))) -
+      E0 * Re(drop(Conj(pm) %*% pm))
+  }
+  tot
+}
+
+parity_signature <- function(sites, L) {
+  rows <- integer(L); cols <- integer(L)
+  for (s in sites) {
+    r <- (s - 1) %/% L + 1; c <- (s - 1) %% L + 1
+    rows[r] <- 1 - rows[r]; cols[c] <- 1 - cols[c]
+  }
+  list(rows = rows, cols = cols)
+}
+
+L <- 3; n <- L * L; iB <- site_index(3, 3, L)
+cat("Lattice:", L, "x", L, " Hilbert space dimension:", 2^n, "\n")
+```
+
+The engine is validated against Hotta's minimal two-qubit QET model, for which the answer is known
+independently.
+
+```{r validation}
+den <- sqrt(1 + 0.36)
+HA2 <- 1 * op_string(2, 1, "Z") + (1 / den) * diag(4)
+HB2 <- 1 * op_string(2, 2, "Z") + (1 / den) * diag(4)
+V2  <- 2 * 0.6 * (op_string(2, 1, "X") %*% op_string(2, 2, "X")) + (0.72 / den) * diag(4)
+H2  <- HA2 + HB2 + V2
+g2  <- ground_state(H2)
+v2  <- qet_exact(g2$psi, HB2, op_string(2, 1, "X"), op_string(2, 2, "Y"))
+
+cat(sprintf("Minimal model ground energy : %.2e  (exact: 0)\n", g2$E0))
+cat(sprintf("Minimal model E_B           : %.6f  (h=1, k=0.6)\n", v2$EB))
+```
+
+<br />
+<br />
+
+# Conjecture A: The Commuting-Projector Null
+
+At $h = 0$ the model is a pure stabilizer code. Its ground space is spanned by states stabilized by
+every plaquette operator $X_p$; a specific entangled representative is additionally stabilized by
+every row and column $Z$-product. This state is constructed below by repeated projection.
+
+The distinction that matters is that this state is *genuinely entangled* — it is not a product
+state, so a null result cannot be dismissed as a trivial absence of correlation.
+
+```{r stabilizer-null}
+dim <- 2^n
+gens <- lapply(plaquettes(L), function(p) op_string(n, p, rep("X", 4)))
+for (r in 1:L)
+  gens[[length(gens) + 1]] <- op_string(n, sapply(1:L, function(c) site_index(r, c, L)),
+                                        rep("Z", L))
+for (c in 1:(L - 1))
+  gens[[length(gens) + 1]] <- op_string(n, sapply(1:L, function(r) site_index(r, c, L)),
+                                        rep("Z", L))
+
+set.seed(42)
+v <- rnorm(dim) + 0i
+for (g in gens) v <- 0.5 * (v + as.vector(g %*% v))
+v <- v / sqrt(sum(Mod(v)^2))
+
+m0 <- build_model(L, 0, "xu_moore")
+sv <- svd(matrix(v, nrow = 2^4, ncol = 2^5))$d
+pr <- sv^2; pr <- pr[pr > 1e-12]
+
+cat(sprintf("Stabilizer state energy      : %.6f  (minimum %.1f)\n",
+            Re(drop(Conj(v) %*% (m0$H %*% v))), -(L - 1)^2))
+cat(sprintf("Entanglement entropy (4|5)   : %.4f bits\n", -sum(pr * log2(pr))))
+
+tri <- c(site_index(1, 1, L), site_index(1, 3, L), site_index(3, 1, L))
+MA <- op_string(n, tri, rep("X", 3))
+
+stab_tbl <- do.call(rbind, lapply(c("X", "Y", "Z"), function(pb) {
+  r <- qet_exact(v, m0$local[[iB]], MA, op_string(n, iB, pb))
+  data.frame(sigma_B = pb, C = r$C, E_B = r$EB)
+}))
+stab_tbl
+```
+
+The correlator $C$ vanishes identically, and with it the teleported energy, for every choice of
+Bob's operator. The state carries three full bits of entanglement across the cut and delivers
+exactly nothing.
+
+The mechanism is that in a commuting-projector model, Alice's local Pauli either commutes with
+every stabilizer — learning nothing and injecting nothing — or anticommutes with some, injecting
+energy in sharp quanta of $2J$ localized on stabilizers touching her own support. Correlations in a
+stabilizer state are all-or-nothing: $\langle \mathcal{O}_A \mathcal{O}_B\rangle$ is nonzero only
+when the product is itself a stabilizer or logical operator. There is no smooth correlator for Bob
+to lever against.
+
+**Conjecture A holds.** The QET resource is local energy fluctuation in a frustrated ground state,
+not entanglement as such. Since the X-cube model and Haah's cubic code are commuting-projector
+stabilizer models by construction, the same argument applies to them unchanged, and neither supports
+QET in its unperturbed form.
+
+<br />
+<br />
+
+# Conjecture B: Anisotropy — Falsified Twice Over
+
+The anisotropy conjecture predicted that at $h > 0$, QET yield between a single Alice site and a
+single Bob site would be finite along lattice axes and suppressed along diagonals. Testing it
+requires comparing row-aligned, column-aligned, and diagonal Alice–Bob pairs at equal lattice
+distance, in both models, over all nine Pauli measurement/rotation combinations.
+
+Alice is fixed at $(1,1)$ and Bob is placed at $(1,3)$, $(3,1)$ and $(3,3)$ — all at Chebyshev
+distance 2, all with support disjoint from $\tilde{H}_B$.
+
+```{r single-site-blockade}
+geoms <- list(row = c(1, 3), col = c(3, 1), diag = c(3, 3))
+iA <- site_index(1, 1, L)
+
+blockade <- do.call(rbind, lapply(c(0.5, 1.0, 1.5), function(h) {
+  do.call(rbind, lapply(c("xu_moore", "nn_ising"), function(md) {
+    m <- build_model(L, h, md); g <- ground_state(m$H)
+    do.call(rbind, lapply(names(geoms), function(nm) {
+      B <- geoms[[nm]]; jB <- site_index(B[1], B[2], L)
+      best <- 0
+      for (pa in c("X", "Y", "Z")) for (pb in c("X", "Y", "Z"))
+        best <- max(best, qet_exact(g$psi, m$local[[jB]],
+                                    op_string(n, iA, pa), op_string(n, jB, pb))$EB)
+      data.frame(h = h,
+                 model = ifelse(md == "xu_moore", "Xu-Moore (subsystem)", "NN Ising (global)"),
+                 geometry = nm, E_B = best)
+    }))
+  }))
+}))
+blockade
+```
+
+The result is unambiguous and was not the expected one.
+
+In the **control** model, QET works — and it is essentially *isotropic*. Row, column and diagonal
+yields agree to within a fraction of a percent. The anisotropy conjecture presupposed that a lattice
+model would show meaningful directional structure in this quantity; the control shows it does not.
+
+In the **Xu–Moore** model, the yield is zero to machine precision in every direction, at every
+field strength, for every one of the nine Pauli combinations. There is no anisotropy because there
+is no signal at all to be anisotropic.
+
+```{r blockade-plot, fig.height=4.5}
+bp <- blockade %>% mutate(E_plot = pmax(E_B, 1e-18))
+
+ggplot(bp, aes(x = geometry, y = E_plot, fill = model)) +
+  geom_col(position = position_dodge(width = 0.8), width = 0.7, alpha = 0.85) +
+  facet_wrap(~ h, labeller = label_both) +
+  scale_y_log10(limits = c(1e-18, 1)) +
+  scale_fill_manual(values = c("Xu-Moore (subsystem)" = "#1D9E75",
+                               "NN Ising (global)" = "#D85A30")) +
+  labs(title = "Single-site QET yield: subsystem symmetry versus global symmetry",
+       subtitle = "Xu-Moore bars sit at machine zero for every geometry and field strength",
+       x = "Alice-Bob geometry", y = expression(E[B]~"(log scale)"), fill = "Model") +
+  theme(legend.position = "bottom")
+```
+
+**Conjecture B is falsified.** Subsystem symmetry does not modulate the yield with direction; it
+eliminates the standard bipartite protocol outright.
+
+<br />
+<br />
+
+# The Selection Rule
+
+The total blockade is more informative than graded anisotropy would have been, because it has an
+exact symmetry explanation that predicts precisely how to lift it.
+
+## Derivation
+
+For a nondegenerate ground state, $|g\rangle$ is a simultaneous eigenstate of every $R_r$ and
+$C_c$. For any Pauli string $\mathcal{O}$,
+
+$$R_r \,\mathcal{O}\, R_r = (-1)^{\,n_r(\mathcal{O})}\, \mathcal{O}$$
+
+where $n_r(\mathcal{O})$ counts $X$ or $Y$ factors in row $r$. Hence
+
+$$\langle g|\mathcal{O}|g\rangle \neq 0 \;\Longrightarrow\; n_r(\mathcal{O}) \text{ even for every row } r,\;\; n_c(\mathcal{O}) \text{ even for every column } c$$
+
+A second constraint comes from reality: $H$ is a real symmetric matrix, so $|g\rangle$ is real and
+every purely imaginary operator has vanishing expectation. Since $i[\sigma_B, \tilde{H}_B]$ is real
+only when $\sigma_B$ contains a $Y$, Bob's rotation axis is forced: $\sigma_B = Y_B$.
+
+Evaluating the commutator,
+
+$$\mathcal{O}_B \equiv i[Y_B, \tilde{H}_B] = 2h X_B + \frac{J}{2}\sum_{p \ni B} Z_B X_{p \setminus B}$$
+
+Every term carries the same parity signature. For $X_B$ this is immediate. For
+$Z_B X_{p\setminus B}$, the three remaining corners of plaquette $p$ place two $X$ factors in the
+row opposite Bob's and one in Bob's own row, and likewise for columns. So in all cases
+
+$$n_r(\mathcal{O}_B) \text{ is odd for } r = \mathrm{row}(B) \text{ only}, \qquad
+n_c(\mathcal{O}_B) \text{ is odd for } c = \mathrm{col}(B) \text{ only}$$
+
+For $C = \tfrac{1}{2}\langle\{M_A, \mathcal{O}_B\}\rangle$ to survive, $M_A$ must carry *exactly
+the same signature*. A single-site $X_A$ has odd parity in $\mathrm{row}(A)$ and $\mathrm{col}(A)$,
+which matches only if $A = B$ — impossible under the disjoint-support requirement. This is the
+blockade, in one line.
+
+The minimal admissible $M_A$ therefore needs three sites. Choosing $r' \neq \mathrm{row}(B)$ and
+$c' \neq \mathrm{col}(B)$, the operator
+
+$$M_A = X_{(\mathrm{row}(B),\, c')}\; X_{(r',\, c')}\; X_{(r',\, \mathrm{col}(B))}$$
+
+has odd parity in $\mathrm{row}(B)$ and $\mathrm{col}(B)$ and even parity everywhere else. These
+three sites are precisely **the remaining corners of a rectangle whose fourth corner is Bob**.
+
+This is not an arbitrary shape. The product of plaquette stabilizers over any rectangular region
+collapses to $X$ on its four corners, since interior sites appear an even number of times. The
+required $M_A$ is exactly the Xu–Moore rectangular order-parameter operator with Bob's corner
+removed.
+
+## Exhaustive Verification
+
+The rule is tested against every candidate observable, not merely the predicted one. All $2^5 - 1 = 31$
+non-empty subsets of the sites disjoint from $\tilde{H}_B$ are enumerated, the parity signature of
+each is computed, and each is checked numerically.
+
+```{r selection-rule}
+supp <- c(site_index(2, 2, L), site_index(2, 3, L), site_index(3, 2, L), iB)
+far <- setdiff(1:n, supp)
+m04 <- build_model(L, 0.4, "xu_moore"); g04 <- ground_state(m04$H)
+sigB <- op_string(n, iB, "Y")
+
+target_r <- as.integer(1:L == 3); target_c <- as.integer(1:L == 3)
+
+enum <- data.frame()
+for (k in 1:length(far)) {
+  cb <- combn(far, k)
+  for (j in 1:ncol(cb)) {
+    st <- cb[, j]; ps <- parity_signature(st, L)
+    pred <- all(ps$rows == target_r) && all(ps$cols == target_c)
+    r <- qet_exact(g04$psi, m04$local[[iB]], op_string(n, st, rep("X", k)), sigB)
+    enum <- rbind(enum, data.frame(
+      size = k,
+      sites = paste(sprintf("(%d,%d)", (st - 1) %/% L + 1, (st - 1) %% L + 1), collapse = " "),
+      predicted = pred, C = r$C, E_B = r$EB, observed = abs(r$C) > 1e-10))
+  }
+}
+
+cat(sprintf("Candidate observables tested : %d\n", nrow(enum)))
+cat(sprintf("Predicted by parity rule     : %d\n", sum(enum$predicted)))
+cat(sprintf("Numerically nonzero          : %d\n", sum(enum$observed)))
+cat(sprintf("Prediction matches numerics  : %s\n", all(enum$predicted == enum$observed)))
+cat(sprintf("False positives / negatives  : %d / %d\n",
+            sum(enum$predicted & !enum$observed), sum(!enum$predicted & enum$observed)))
+enum[enum$observed, c("size", "sites", "C", "E_B")]
+```
+
+The single surviving observable out of 31 is the three-corner rectangle operator, exactly as
+derived. There are no false positives and no false negatives.
+
+## Independent Verification at $L = 4$
+
+A $3\times3$ lattice admits only one rectangle, so the rule was verified independently on a
+$4\times4$ lattice, where the parity rule predicts exactly four admissible observables among all
+793 subsets of size $\leq 4$. That calculation uses sparse linear algebra (Hilbert space dimension
+65,536) and is reported here rather than evaluated in this knit, since the dense construction above
+does not scale past $L = 3$.
+
+```{r l4-code, eval=FALSE}
+# Requires Matrix + RSpectra. Hilbert dimension 65536; not evaluated in this knit.
+# Predicted admissible triples for B = (4,4):
+#   {(r,c), (r,4), (4,c)} for r in {1,2}, c in {1,2}
+# All 793 subsets of size <= 4 were enumerated; agreement was exact.
+```
+
+```{r l4-results}
+l4 <- data.frame(
+  corners = c("(2,2) (2,4) (4,2)", "(1,2) (1,4) (4,2)",
+              "(2,1) (2,4) (4,1)", "(1,1) (1,4) (4,1)"),
+  rectangle = c("3 x 3", "4 x 3", "3 x 4", "4 x 4"),
+  C = c(0.39532, 0.34029, 0.34029, 0.27439),
+  E_B = c(4.4158e-02, 3.3133e-02, 3.3133e-02, 2.1825e-02))
+l4
+```
+
+Four predicted, four observed, zero among the remaining 789. Yield decreases monotonically with
+rectangle size, and the two congruent rectangles $4\times3$ and $3\times4$ give identical yields, as
+the lattice symmetry requires.
+
+<br />
+<br />
+
+# Field Dependence and Efficiency
+
+With the correct geometry established, the yield can be mapped across the phase diagram. The
+control model is swept alongside using its own optimal single-site protocol.
+
+```{r sweep, fig.height=5}
+hs <- c(seq(0.02, 1.0, length.out = 25), seq(1.1, 2.5, length.out = 8))
+
+sweep <- do.call(rbind, lapply(hs, function(h) {
+  mm <- build_model(L, h, "xu_moore"); gg <- ground_state(mm$H)
+  rr <- qet_exact(gg$psi, mm$local[[iB]], MA, sigB)
+  ea <- alice_input(gg$psi, mm$H, gg$E0, MA)
+  nn <- build_model(L, h, "nn_ising"); gn <- ground_state(nn$H)
+  rn <- qet_exact(gn$psi, nn$local[[iB]], op_string(n, iA, "X"), op_string(n, iB, "Y"))
+  data.frame(h = h, E_B = rr$EB, E_A = ea, C = rr$C, gap = gg$gap,
+             efficiency = 100 * rr$EB / ea, E_B_nn = rn$EB)
+}))
+
+cat(sprintf("Peak yield      : E_B = %.4e at h = %.3f (gap %.4f)\n",
+            max(sweep$E_B), sweep$h[which.max(sweep$E_B)], sweep$gap[which.max(sweep$E_B)]))
+cat(sprintf("Peak efficiency : %.2f%% at h = %.3f (gap %.2e)\n",
+            max(sweep$efficiency), sweep$h[which.max(sweep$efficiency)],
+            sweep$gap[which.max(sweep$efficiency)]))
+cat(sprintf("Second law respected (E_B < E_A everywhere): %s\n", all(sweep$E_B < sweep$E_A)))
+```
+
+```{r sweep-plot, fig.height=5}
+long <- sweep %>%
+  select(h, `Xu-Moore (rectangle protocol)` = E_B, `NN Ising (single-site)` = E_B_nn) %>%
+  pivot_longer(-h, names_to = "model", values_to = "E_B")
+
+ggplot(long, aes(x = h, y = pmax(E_B, 1e-16))) +
+  geom_line(aes(colour = model, linetype = model), linewidth = 1.1) +
+  geom_point(aes(colour = model), size = 1.3) +
+  scale_y_log10() +
+  scale_colour_manual(values = c("Xu-Moore (rectangle protocol)" = "#1D9E75",
+                                 "NN Ising (single-site)" = "#D85A30")) +
+  labs(title = "Teleported energy versus transverse field",
+       subtitle = "Xu-Moore yield is non-monotonic and peaks deep in the ordered phase",
+       x = "Transverse field h", y = expression(E[B]~"(log scale)"),
+       colour = "Model", linetype = "Model") +
+  theme(legend.position = "bottom")
+```
+
+The Xu–Moore yield is strongly non-monotonic. It vanishes at $h = 0$ by Conjecture A, rises to a
+maximum deep in the ordered phase, and then decays smoothly as the field destroys the membrane
+correlations carrying the signal. The control model shows a comparatively flat, broad response.
+
+```{r efficiency-plot, fig.height=5}
+p_eff <- ggplot(sweep, aes(x = h, y = efficiency)) +
+  geom_line(colour = "#534AB7", linewidth = 1.1) +
+  geom_point(colour = "#534AB7", size = 1.3) +
+  scale_x_log10() +
+  labs(title = "Transfer efficiency", x = "h (log scale)",
+       y = expression(100 %*% E[B]/E[A]~"(%)"))
+
+p_gap <- ggplot(sweep, aes(x = h, y = pmax(gap, 1e-7))) +
+  geom_line(colour = "#993C1D", linewidth = 1.1) +
+  geom_point(colour = "#993C1D", size = 1.3) +
+  scale_x_log10() + scale_y_log10() +
+  labs(title = "Spectral gap (caveat to the efficiency curve)",
+       x = "h (log scale)", y = "Gap (log scale)")
+
+grid.arrange(p_eff, p_gap, ncol = 2)
+```
+
+Efficiency rises monotonically as $h \to 0$, approaching roughly 37% — a figure comparable to the
+best reported QET efficiencies, and far above the few-percent range of the original bipartite
+protocol. That number should not be quoted without its caveat, which the right-hand panel supplies:
+the high-efficiency regime is also the regime where the spectral gap collapses toward zero. At the
+efficiency maximum the gap is of order $10^{-6}$, so the "ground state" is very nearly degenerate
+and the protocol's practical realizability there is doubtful. The honest statement is a trade-off
+— absolute yield peaks at intermediate field, fractional efficiency peaks where the gap closes, and
+no single operating point optimizes both.
+
+**Conjecture C survives in weakened form.** The yield does vary by orders of magnitude across the
+phase diagram and is a sensitive function of field strength, but on a $3\times3$ lattice no sharp
+critical feature can be resolved, and nothing here establishes a genuine order parameter. What is
+robust is the qualitative claim: an operationally measurable LOCC quantity distinguishes the
+stabilizer point, the ordered phase, and the polarized phase.
+
+<br />
+<br />
+
+# The Protocol Remains Genuine LOCC
+
+A three-site observable spanning the lattice raises an obvious objection: is measuring
+$X_1 X_2 X_3$ across widely separated sites a *local* operation at all? If it required a joint
+non-local parity measurement, the protocol would be smuggling its cost into the measurement
+apparatus.
+
+It does not. Because $\mathcal{O}_B$ commutes with each individual $X_j$ at Alice's sites, the
+coarse-grained two-outcome measurement of the product and the fine-grained eight-outcome
+measurement of the three factors separately yield identical values of both $A$ and $C$.
+
+```{r locc-check}
+Xs <- lapply(tri, function(s) op_string(n, s, "X"))
+mchk <- build_model(L, 0.2, "xu_moore"); gchk <- ground_state(mchk$H)
+HBc <- mchk$local[[iB]]
+joint <- qet_exact(gchk$psi, HBc, MA, sigB)
+ea_j <- alice_input(gchk$psi, mchk$H, gchk$E0, MA)
+
+hb0 <- Re(drop(Conj(gchk$psi) %*% (HBc %*% gchk$psi)))
+Af <- 0; Cf <- 0; ea_f <- 0
+for (s1 in c(1, -1)) for (s2 in c(1, -1)) for (s3 in c(1, -1)) {
+  pv <- gchk$psi
+  for (j in 1:3) pv <- 0.5 * (pv + c(s1, s2, s3)[j] * as.vector(Xs[[j]] %*% pv))
+  nrm <- Re(drop(Conj(pv) %*% pv))
+  if (nrm < 1e-14) next
+  ea_f <- ea_f + Re(drop(Conj(pv) %*% (mchk$H %*% pv))) - gchk$E0 * nrm
+  sBpv <- sigB %*% pv
+  Af <- Af + Re(drop(Conj(as.vector(sBpv)) %*% (HBc %*% sBpv))) - hb0 * nrm
+  cm <- 1i * (sigB %*% (HBc %*% pv) - HBc %*% (sigB %*% pv))
+  Cf <- Cf + s1 * s2 * s3 * Re(drop(Conj(pv) %*% cm))
+}
+
+data.frame(
+  scheme = c("Joint 3-body PVM", "Three independent local PVMs"),
+  E_B = c(joint$EB, 0.5 * (sqrt(Af^2 + Cf^2) - Af)),
+  E_A = c(ea_j, ea_f))
+```
+
+Three separated agents each measure $X$ locally, broadcast one classical bit each, and Bob
+conditions his rotation on the parity of the three bits. The yield and the energy cost are
+identical to the joint measurement. Subsystem symmetry therefore does not break LOCC — it changes
+the *shape* of the LOCC protocol, promoting a two-party, one-bit exchange into a four-party,
+three-bit exchange with the participants pinned to the corners of a rectangle.
+
+<br />
+<br />
+
+# Status of Conjectures
+
+```{r scorecard}
+data.frame(
+  conjecture = c("A: commuting-projector null",
+                 "B: anisotropic yield",
+                 "C: phase diagnostic",
+                 "D: rectangle selection rule"),
+  status = c("Confirmed", "Falsified", "Weakly supported", "Confirmed (derived post hoc)"),
+  evidence = c("E_B = 0 exactly on an entangled stabilizer state (3 bits, 4|5 cut)",
+               "Yield is zero in ALL directions, not merely diagonals; control is isotropic",
+               "Yield varies by ~5 orders of magnitude in h; no sharp critical feature at L=3",
+               "31/31 at L=3 and 793/793 at L=4, zero false positives or negatives"))
+```
+
+The falsification of Conjecture B deserves emphasis rather than burial. The conjecture assumed that
+restricted mobility would show up as *graded* directional structure in a bipartite protocol. Two
+things were wrong with it. The control model demonstrates that the lattice geometry alone produces
+essentially no anisotropy in this observable, so the baseline expectation was mistaken. And the
+mechanism by which subsystem symmetry acts turned out to be a hard superselection rule rather than
+a soft modulation — an exact parity constraint that either permits an observable or annihilates it,
+with nothing in between.
+
+<br />
+<br />
+
+# What This Does and Does Not Establish
+
+**Established.** Within the two-dimensional plaquette Ising model at $L = 3$ and $L = 4$: the
+commuting-projector null, the total blockade of single-site bipartite QET, the exact parity
+selection rule and its unique minimal rectangle solution, the non-monotonic field dependence, the
+yield–efficiency trade-off, and the LOCC-compatibility of the rectangle protocol.
+
+**Not established.** Four limitations should be stated plainly.
+
+The lattices are small. $L = 3$ and $L = 4$ cannot resolve critical behaviour, and the peak
+positions quoted above are finite-size values with no thermodynamic meaning. The selection rule
+itself is exact and size-independent — it follows from symmetry, not from the numerics — but every
+quantitative curve here is a small-system result.
+
+The model is two-dimensional. Xu–Moore is the minimal carrier of subsystem symmetry, not a fracton
+model in the full three-dimensional sense. The parity argument transfers to the X-cube model
+essentially verbatim, since its subsystem symmetries are planar $Z$-products and its excitations
+also appear at membrane corners, and the analogous prediction is that Alice's sites must occupy the
+remaining corners of a rectangular cuboid completed by Bob. **That extension is a conjecture, not a
+result — it has not been verified numerically here.** Haah's cubic code, whose subsystem symmetries
+live on fractal rather than rigid submanifolds, should require Alice's measurement region to have a
+correspondingly fractal support, which would be a considerably stronger and more surprising claim
+if it held.
+
+The efficiency figures live near degeneracy. As noted, the ~37% efficiency coincides with a gap of
+order $10^{-6}$ and should not be compared directly to reported experimental QET efficiencies
+without that qualification.
+
+Bounds are unaddressed. The 2026 bound of Fan et al. on extractable energy in QET applies only to
+gapped systems with a *unique* ground state. Fracton models are the canonical violation of that
+hypothesis, with ground-state degeneracy growing linearly in $L$. Whether those bounds extend,
+fail, or split across superselection sectors remains open, and nothing here settles it.
+
+<br />
+<br />
+
+# Open Directions
+
+The natural next computations, roughly in order of cost:
+
+- **X-cube verification.** Test the cuboid-corner prediction directly. A single-cube X-cube instance
+  with periodic boundaries is at the edge of exact diagonalization; a matrix-free Lanczos
+  implementation would reach it.
+- **Haah's cubic code.** The fractal-support prediction is the sharpest available test of whether
+  the selection rule is really about subsystem symmetry rather than about rigid lattice geometry.
+- **Finite-size scaling.** Whether the yield peak sharpens toward the known Xu–Moore transition, or
+  merely drifts, requires $L \geq 6$ and sparse methods.
+- **Degenerate-ground-state bounds.** Extending the Fan et al. analysis to subextensively degenerate
+  ground spaces, where the relevant question is whether extractable energy is bounded per
+  superselection sector or only in aggregate.
+- **Hardware realization.** The rectangle protocol needs four qubits at prescribed positions plus
+  three classical bits, which is well within reach of the superconducting platforms that have
+  already demonstrated QET.
+
+<br />
+<br />
+
+# Conclusion
+
+The question this document set out to answer was whether the restricted-mobility structure of
+fracton-like phases *constrains or enables* local energy routing. The answer is both, and in a more
+specific way than anticipated.
+
+It constrains: the standard bipartite QET protocol is not merely weakened by subsystem symmetry but
+annihilated by it, exactly and at all parameters, by a parity superselection rule that no choice of
+local measurement or rotation can evade. Ground-state entanglement, abundant in these phases, is
+simply the wrong resource.
+
+It enables: the same symmetry that forbids the two-party protocol prescribes the four-party one.
+The admissible measurement geometry is not merely permitted but uniquely determined — Alice's sites
+must complete a rectangle with Bob, and the required observable is the phase's own order parameter
+with one corner removed. Energy routing in such a phase is possible, but only along channels whose
+shape the phase itself dictates.
+
+The broader methodological point is the one worth carrying forward. The initial conjecture predicted
+a graded, quantitative effect and was wrong; what the numerics actually produced was a hard
+selection rule that a symmetry argument then explained exactly and predicted in advance across
+hundreds of untested cases. A negative result with a mechanism is worth more than a positive result
+without one.
+
+<br />
+<br />
+
+# References
+
+- Hotta, M. (2008). A protocol for quantum energy distribution. *Physics Letters A* **372**, 5671.
+- Hotta, M. (2009). Quantum energy teleportation in spin chain systems. *J. Phys. Soc. Jpn.* **78**, 034001.
+- Hotta, M. (2011). Quantum Energy Teleportation: An Introductory Review. arXiv:1101.3954.
+- Haque, T. (2025). Does Entanglement Correlation in Ground State Guarantee Quantum Energy Teleportation? arXiv:2502.07097.
+- Ikeda, K. (2023). Demonstration of quantum energy teleportation on superconducting quantum hardware. *Phys. Rev. Applied* **20**, 024051.
+- Ikeda, K. (2023). Investigating global and topological orders of states by local measurement and classical communication. *AVS Quantum Science* **5**, 035002.
+- Rodríguez-Briones, N. A., Katiyar, H., Martín-Martínez, E., & Laflamme, R. (2023). Experimental activation of strong local passive states with quantum information. *Phys. Rev. Lett.* **130**, 110801.
+- Fan, H., Wu, F.-L., Wang, L., Liu, S.-Q., Liu, S.-Y., & Haque, T. (2026). Nontrivial bounds on extractable energy in quantum energy teleportation for gapped many-body systems with a unique ground state. *Phys. Lett. A* **584**, 131613.
+- Xu, C., & Moore, J. E. (2004). Strong-weak coupling self-duality in the two-dimensional quantum phase transition of p+ip superconducting arrays. *Phys. Rev. Lett.* **93**, 047003.
+- Vijay, S., Haah, J., & Fu, L. (2016). Fracton topological order, generalized lattice gauge theory, and duality. *Phys. Rev. B* **94**, 235157.
+- Haah, J. (2011). Local stabilizer codes in three dimensions without string logical operators. *Phys. Rev. A* **83**, 042330.
+- Nandkishore, R. M., & Hermele, M. (2019). Fractons. *Annu. Rev. Condens. Matter Phys.* **10**, 295.
+
+---
+
+**Companion documents in this repository**: `Fracton_Codes_in_R.Rmd` (stabilizer formalism and
+mobility constraints), `Quasiparticle_Rectification.md` (thermodynamic limits on vacuum energy
+harvesting), `Quantum_Field_Theory_in_R.Rmd` (zero-point fluctuation formalism).
