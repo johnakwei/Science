@@ -1,0 +1,618 @@
+---
+title: "Chiral Graviton Modes in Fractional Quantum Hall Liquids"
+subtitle: "Quantum Geometry, Spectral Sum Rules, and Polarization Selection Rules in R"
+author: "John Akwei, Senior Data Scientist"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    theme: cosmo
+    highlight: tango
+    code_folding: hide
+    df_print: kable
+    fig_width: 10
+    fig_height: 6
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,
+                      fig.align = 'center', cache = TRUE)
+```
+
+```{r libraries, message=FALSE}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+library(viridis)
+library(gridExtra)
+
+theme_set(theme_minimal())
+```
+
+<br />
+
+# Abstract
+
+Chiral graviton modes (CGMs) are the long-wavelength, spin-2 limit of the
+Girvin–MacDonald–Platzman (GMP) magnetoroton in fractional quantum Hall (FQH)
+liquids. They are the quanta of fluctuations of Haldane's *guiding-centre
+metric* — an internal, emergent geometric degree of freedom of the electron
+fluid, not of spacetime. This document (i) corrects and tightens a chat-export
+summary of the Nanjing University experiments, (ii) implements the exact
+topological bookkeeping that governs graviton chirality (Wen–Zee shift,
+guiding-centre spin, Haldane's bound, the Golkar–Nguyen–Son spectral sum
+rules), and (iii) maps the genuine technical dependencies — as opposed to
+structural analogies — between this material and the existing repository
+documents `Gravitation.md`, `Gravitons_Gluons_Branes.md`,
+`Quantum_Chromodynamics_in_R.Rmd`, `Fracton_Codes_in_R.Rmd`, and
+`QuasiParticles_in_R.Rmd`.
+
+The central quantitative result is that graviton chirality is **not** an
+observation to be reported — it is a **theorem** with a topological input. A
+non-negativity argument applied to two spectral densities forces
+$S_4 \ge |\mathcal{S}-1|/8$, and equality holds *if and only if* one circular
+polarization channel is empty. The experiment is a test of how close a real
+Coulomb ground state sits to that bound.
+
+<br />
+
+# Epistemic flag convention
+
+Carried over from `Gravitons_Gluons_Branes.md` for consistency across the
+repository.
+
+- **[Established]** — experimental result or theorem; no serious dispute.
+- **[Standard theory]** — mainstream theoretical result within its framework.
+- **[Model]** — true within a specific trial wavefunction or effective model;
+  not expected to hold for generic Hamiltonians.
+- **[Conjectural]** — proposed but unproven.
+- **[Corrected]** — the source chat transcript stated this incorrectly.
+- **[Convention]** — sign or normalization depends on a stated choice; check
+  against the cited paper before quoting a number.
+
+<br />
+
+# What was actually measured
+
+Two distinct experiments are conflated in the source transcript. They are two
+years apart and report different things. **[Corrected]**
+
+| | 2024 result | 2026 result |
+|---|---|---|
+| Reference | Liang, Liu, Yang, Huang, Wurstbauer, Dean, West, Pfeiffer, Du, Pinczuk, *Nature* **628**, 78–83 (2024) | Yang, Wang, Lu, Liu, Baldwin, West, Pfeiffer, Yang, Balram, Du, *Nature Physics* (2026), doi:10.1038/s41567-026-03338-9 |
+| Claim | First observation of a chiral spin-2 long-wavelength magnetoroton | Observation of *multiple* gravitons, incl. a high-energy mode |
+| Fillings | $\nu = 1/3$ (and related) | $\nu = 1/4$, $2/7$, $2/9$ |
+| Interpretation | Supports Haldane's geometric description | Supports the **parton** construction of FQH states |
+| Technique | Circularly polarized resonant inelastic light scattering (CP-RILS) | Same architecture |
+
+## Corrections to the source transcript
+
+1. **"Chirality of $\pm 2$" was not observed.** **[Corrected]** The physical
+   content is the opposite: at $\nu = 1/3$ the mode appears in *one* circular
+   polarization channel only, corresponding to angular-momentum transfer
+   $-2$. A fundamental graviton has *both* helicities $\pm 2$; the FQH mode is
+   *maximally chiral*, and that asymmetry is the signature. For particle–hole
+   conjugate states such as $\nu = 2/3$ the sign reverses to $+2$.
+   **[Established]**
+
+2. **"Behave precisely like the hypothetical fundamental graviton" is an
+   overclaim.** **[Corrected]** What is shared is a single quantum number:
+   charge $\pm 2$ under the $SO(2)$ rotation group of the plane. See
+   §"What the CGM is not".
+
+3. **"First experimental evidence ... published in Nature" dated to 2026.**
+   **[Corrected]** The first evidence is the March 2024 *Nature* paper. The
+   2026 *Nature Physics* paper is a follow-up on partons.
+
+4. **"Benchtop simulator to test the complex tensor mathematics behind quantum
+   gravity."** **[Corrected]** It tests Haldane's geometric theory of the FQH
+   effect. It supplies no information about graviton self-coupling, the
+   Einstein–Hilbert action, or any UV completion of gravity.
+
+5. **"Parton" is a false cognate with QCD.** **[Corrected]** In the FQH
+   context (Jain 1989) partons are unphysical fractionally charged fermions
+   into which an electron is formally decomposed and then reassembled. They
+   are *not* the Feynman–Bjorken partons of
+   `Quantum_Chromodynamics_in_R.Rmd`. Structural analogy only.
+
+6. **Resonance is not incidental.** **[Established]** The "R" in CP-RILS
+   matters: the light-scattering cross-section is only measurable when the
+   laser is tuned near the fundamental optical transition of the GaAs quantum
+   well. The transcript treats RILS as generic spectroscopy.
+
+7. **A subtlety the transcript skips.** The GMP density-wave mode has
+   *vanishing* spectral weight in the density channel as $q \to 0$. The
+   reason a $q \to 0$ measurement is possible at all is the Golkar–Nguyen–Son
+   result that the intensity in the **spin-2 (stress-tensor) channel** does
+   not vanish at $q = 0$. Without that, the experiment would have no signal.
+   **[Standard theory]**
+
+<br />
+
+# Quantum geometry: why "spin-2" at all
+
+Restricting to the lowest Landau level leaves only the guiding-centre
+coordinates $R^a$, which do not commute:
+
+$$[R^a, R^b] = -i \ell_B^2 \epsilon^{ab}, \qquad \ell_B = \sqrt{\hbar / eB}.$$
+
+Haldane's observation is that the FQH ground state must choose a **unimodular
+metric** $g_{ab}$ ($\det g = 1$) to define the shape of the correlation hole
+around each guiding centre. A unimodular symmetric $2\times 2$ matrix has two
+free parameters, which package into a single complex field carrying charge
+$\pm 2$ under rotations. That is the entire origin of "spin-2." **[Standard
+theory]**
+
+Two consequences follow immediately, and both are worth stating because they
+close off the loose analogy in the source transcript:
+
+- The metric is **internal** to the electron fluid, not a fluctuation of the
+  ambient spacetime metric. The GaAs lattice is unaffected.
+- "Spin-2" here means charge $2$ under $SO(2)$, the rotation group of a plane.
+  A four-dimensional graviton lives in a spin-2 representation of the Lorentz
+  group $SO(3,1)$, which is a strictly stronger statement. **[Established]**
+
+<br />
+
+# Shift, guiding-centre spin, and Haldane's bound
+
+The topological input is the Wen–Zee shift $\mathcal{S}$, defined on the
+sphere by $N_\phi = \nu^{-1} N - \mathcal{S}$. The guiding-centre spin is
+$\bar{s} = (\mathcal{S} - 1)/2$.
+
+Haldane's inequality on the $q^4$ coefficient of the projected static
+structure factor is
+
+$$S_4 \;\ge\; \frac{|\mathcal{S} - 1|}{8},$$
+
+proven as a sum rule by Golkar, Nguyen and Son (*JHEP* **2016**, 21).
+**[Established]**
+
+```{r shift_table}
+# Shift formulas -------------------------------------------------------------
+# Laughlin  nu = 1/m                 : S = m
+# Jain forward-flux nu = n/(2pn + 1) : S = n + 2p
+# Jain reverse-flux nu = n/(2pn - 1) : S = 2p - n
+# [Standard theory] -- these are the standard LLL conventions.
+
+fqh_states <- bind_rows(
+  data.frame(family = "IQHE",     label = "1",    nu = 1,        S = 1),
+  data.frame(family = "Laughlin", label = "1/3",  nu = 1/3,      S = 3),
+  data.frame(family = "Laughlin", label = "1/5",  nu = 1/5,      S = 5),
+  data.frame(family = "Laughlin", label = "1/7",  nu = 1/7,      S = 7),
+  data.frame(family = "Jain +",   label = "2/5",  nu = 2/5,      S = 4),
+  data.frame(family = "Jain +",   label = "3/7",  nu = 3/7,      S = 5),
+  data.frame(family = "Jain +",   label = "2/9",  nu = 2/9,      S = 6),
+  data.frame(family = "Jain -",   label = "2/3",  nu = 2/3,      S = 0),
+  data.frame(family = "Jain -",   label = "3/5",  nu = 3/5,      S = -1),
+  data.frame(family = "Jain -",   label = "2/7",  nu = 2/7,      S = 2)
+) %>%
+  mutate(
+    s_bar        = (S - 1) / 2,
+    S4_bound     = abs(S - 1) / 8,
+    chirality    = ifelse(S == 1, 0, ifelse(S > 1, -2, +2)),
+    chirality_lb = factor(chirality, levels = c(-2, 0, 2),
+                          labels = c("-2", "none", "+2"))
+  )
+
+knitr::kable(
+  fqh_states %>% select(family, label, S, s_bar, S4_bound, chirality),
+  col.names = c("Family", "nu", "Shift S", "s-bar", "Haldane bound on S4",
+                "Predicted chirality"),
+  digits = 4,
+  caption = "Topological bookkeeping for the chiral graviton mode."
+)
+```
+
+**Consistency checks.** Two independent facts must fall out, and they do:
+
+- $\nu = 1$: $\mathcal{S} = 1 \Rightarrow \bar{s} = 0 \Rightarrow$ bound is
+  $0$. The integer quantum Hall state has no graviton. This is the control
+  model for the whole framework.
+- $\nu = 2/3$: $\mathcal{S} = 0 \Rightarrow \mathcal{S} - 1 < 0
+  \Rightarrow$ chirality $+2$, opposite to $\nu = 1/3$. This reproduces the
+  known particle–hole reversal without any additional input. **[Established]**
+
+## Laughlin saturation
+
+For the Laughlin wavefunction at $\nu = 1/m$ the exact $q^4$ coefficient is
+$S_4 = (m-1)/8$, which equals $|\mathcal{S}-1|/8$ with $\mathcal{S} = m$. The
+model wavefunction saturates the bound exactly. **[Model]** — this is a
+property of the trial wavefunction, not of the Coulomb Hamiltonian.
+
+```{r laughlin_saturation}
+laughlin <- data.frame(m = c(1, 3, 5, 7)) %>%
+  mutate(nu       = 1 / m,
+         S        = m,
+         S4_exact = (m - 1) / 8,
+         S4_bound = abs(S - 1) / 8,
+         saturated = isTRUE(all.equal(S4_exact, S4_bound)))
+
+knitr::kable(laughlin, digits = 4,
+             caption = "Laughlin states saturate Haldane's bound exactly.")
+
+stopifnot(all(abs(laughlin$S4_exact - laughlin$S4_bound) < 1e-12))
+```
+
+<br />
+
+# The chiral spectral sum rules
+
+Define two non-negative spectral densities $\rho_T^{(-)}(\omega)$ and
+$\rho_T^{(+)}(\omega)$, proportional to the absorption probabilities for
+gravitons of chirality $-2$ and $+2$ respectively. Their inverse-frequency
+moments,
+
+$$\mathcal{J}_\mp \;=\; \int_0^\infty \frac{d\omega}{2\pi}\,
+\frac{\rho_T^{(\mp)}(\omega)}{\omega},$$
+
+satisfy two sum rules. **[Convention]** — written here in the normalization
+that makes Haldane's bound come out as stated; verify factors against
+Golkar–Nguyen–Son before quoting numerically:
+
+$$\mathcal{J}_- - \mathcal{J}_+ \;=\; \frac{\mathcal{S} - 1}{8},
+\qquad\qquad
+\mathcal{J}_- + \mathcal{J}_+ \;=\; S_4 .$$
+
+The first is **topological** — fixed by the shift, independent of the
+Hamiltonian. The second is **dynamical** — it depends on the actual ground
+state. Because $\mathcal{J}_\pm \ge 0$ by construction, the two together give
+Haldane's bound and, crucially, tell us that *saturation is equivalent to one
+channel being empty*.
+
+Define the **chirality purity**
+
+$$P \;=\; \frac{\mathcal{J}_- - \mathcal{J}_+}{\mathcal{J}_- + \mathcal{J}_+}
+\;=\; \frac{\mathcal{S} - 1}{8\,S_4}, \qquad P \in [-1, 1].$$
+
+$|P| = 1$ is maximal chirality. This single number is what the CP-RILS
+polarization asymmetry is actually measuring.
+
+```{r sum_rules}
+chiral_weights <- function(S, S4) {
+  d  <- (S - 1) / 8
+  Jm <- (S4 + d) / 2
+  Jp <- (S4 - d) / 2
+  if (Jm < -1e-12 || Jp < -1e-12)
+    warning("S4 violates Haldane's bound for this shift; no valid state.")
+  data.frame(S = S, S4 = S4, J_minus = Jm, J_plus = Jp,
+             purity = (Jm - Jp) / (Jm + Jp))
+}
+
+scenarios <- bind_rows(
+  cbind(case = "nu=1/3, Laughlin model wf",   chiral_weights(3, 1/4)),
+  cbind(case = "nu=1/3, Coulomb (S4 larger)", chiral_weights(3, 0.30)),
+  cbind(case = "nu=2/3, anti-Laughlin",       chiral_weights(0, 1/8)),
+  cbind(case = "nu=2/7, single graviton",     chiral_weights(2, 1/8)),
+  cbind(case = "nu=2/7, plus parton mode",    chiral_weights(2, 1/2))
+)
+
+knitr::kable(scenarios, digits = 4,
+             caption = "Chiral spectral weights and purity. Purity = +/-1 means one polarization channel is empty.")
+```
+
+## Reading the table
+
+- **$\nu = 1/3$, model wavefunction**: $P = +1$. All weight in the $-2$
+  channel. This is the idealized statement.
+- **$\nu = 1/3$, Coulomb**: numerics on Coulomb ground states find $S_4$
+  *above* the bound even at $\nu = 1/3$ and $1/5$, so $|P| < 1$ and both
+  chiralities carry weight. **[Established, numerically]** The 2024 experiment
+  therefore demonstrates *near*-maximal chirality, not exactly maximal. The
+  source transcript does not make this distinction.
+- **$\nu = 2/7$**: $\mathcal{S} = 2$, so the topological sum rule fixes the
+  *net* weight at only $1/8$ — a small number. If the measured $S_4$ is
+  substantially larger, the excess is forced into the *opposite*-chirality
+  channel. That is precisely the room the second, high-energy graviton
+  occupies. The 2026 multi-graviton observation is not merely compatible
+  with the sum rules; it is the kind of thing the sum rules make room for.
+  This is the Nguyen–Son argument: a Dirac composite-fermion description of
+  $\nu = n/(4n \pm 1)$ violates Haldane's bound unless an additional mode is
+  added. **[Standard theory]**
+
+```{r purity_figure, fig.height=5.5}
+grid <- expand.grid(S  = c(0, 2, 3, 4, 6),
+                    S4 = seq(0.01, 1.0, by = 0.005)) %>%
+  rowwise() %>%
+  mutate(purity = (S - 1) / (8 * S4)) %>%
+  ungroup() %>%
+  filter(abs(purity) <= 1) %>%
+  mutate(state = factor(S, levels = c(0, 2, 3, 4, 6),
+                        labels = c("nu=2/3 (S=0)", "nu=2/7 (S=2)",
+                                   "nu=1/3 (S=3)", "nu=2/5 (S=4)",
+                                   "nu=2/9 (S=6)")))
+
+ggplot(grid, aes(x = S4, y = purity, colour = state)) +
+  geom_line(aes(colour = state), size = 1.1) +
+  geom_hline(yintercept = c(-1, 0, 1), linetype = "dashed",
+             colour = "grey45") +
+  annotate("text", x = 0.92, y = 0.93, label = "maximally chiral (-2)",
+           size = 3.2, colour = "grey25") +
+  annotate("text", x = 0.92, y = -0.93, label = "maximally chiral (+2)",
+           size = 3.2, colour = "grey25") +
+  scale_colour_viridis_d(name = "FQH state", end = 0.9) +
+  labs(
+    title = "Graviton chirality purity is fixed by the shift and S4",
+    subtitle = "P = (S - 1) / (8 * S4); each curve terminates where Haldane's bound is saturated",
+    x = "S4  (q^4 coefficient of the projected static structure factor)",
+    y = "Chirality purity P"
+  ) +
+  theme(legend.position = "right")
+```
+
+The left endpoint of each curve is the Haldane bound for that state. Moving
+right along a curve — increasing $S_4$ at fixed topology, i.e. deforming away
+from the model wavefunction toward realistic Coulomb interactions — pushes
+$|P|$ down and populates the opposite polarization channel. Note that
+$\nu = 2/7$ ($\mathcal{S}=2$) loses purity fastest, which is why it is the
+natural place to look for a second graviton.
+
+<br />
+
+# Long-wavelength structure factor and the $\nu = 1$ control
+
+The projected static structure factor $\bar{S}(q)$ starts at fourth order:
+
+$$\bar{S}(q\ell_B) \;=\; S_4 (q\ell_B)^4 \;+\; S_6 (q\ell_B)^6 \;+\; \dots$$
+
+**Why this matters experimentally.** CP-RILS transfers momentum
+$q\ell_B \ll 1$. The experiment lives entirely inside the regime where the
+exact $S_4$ coefficient dominates — it is not probing the roton minimum near
+$q\ell_B \approx 1.4$. This is the direct link between the measurement and the
+topological bookkeeping above.
+
+**A caution on $S_6$.** **[Corrected / Conjectural]** Effective-field-theory
+predictions for $S_6$ have been checked numerically and do *not* hold as
+equalities for generic FQH states. Do not treat $S_6$ as universal.
+
+```{r structure_factor}
+x <- seq(0, 1.2, length.out = 300)   # x = q * l_B
+
+sf_df <- fqh_states %>%
+  filter(label %in% c("1", "1/3", "2/5", "1/5")) %>%
+  select(label, S4_bound) %>%
+  tidyr::crossing(x = x) %>%
+  mutate(Sbar = S4_bound * x^4)
+
+ggplot(sf_df, aes(x = x, y = Sbar, colour = label)) +
+  geom_line(aes(colour = label), size = 1.1) +
+  scale_colour_viridis_d(name = "Filling", end = 0.85) +
+  labs(
+    title = "Leading long-wavelength projected structure factor",
+    subtitle = "Model-wavefunction values (bound saturated). The nu = 1 curve is identically zero.",
+    x = expression(q * l[B]),
+    y = expression(bar(S)(q))
+  )
+```
+
+**Exact control calculation.** For $\nu = 1$ the full static structure factor
+is $S(q) = 1 - e^{-q^2\ell_B^2/2}$, and the projection subtracts exactly that
+term, giving $\bar{S}(q) \equiv 0$. No geometric degree of freedom, no
+graviton. This is an analytic benchmark, not a fit. **[Established]**
+
+```{r iqhe_control}
+S_full_nu1 <- function(x) 1 - exp(-x^2 / 2)
+S_proj_nu1 <- function(x) S_full_nu1(x) - (1 - exp(-x^2 / 2))
+
+max_dev <- max(abs(S_proj_nu1(seq(0, 5, length.out = 1001))))
+cat(sprintf("Max |Sbar(q)| for nu = 1 over q*l_B in [0,5]:  %.3e\n", max_dev))
+stopifnot(max_dev < 1e-12)
+```
+
+The single-mode approximation dispersion is
+$\Delta(q) = \bar{f}(q) / \bar{S}(q)$, with $\bar{f}(q)$ the projected
+oscillator strength. Evaluating it requires the Laughlin pair correlation
+function $g(r)$, which is **not** computed here; a hypernetted-chain or
+sphere-geometry exact-diagonalization implementation is deferred (see
+Roadmap).
+
+<br />
+
+# Polarization selection rules
+
+The measurement is angular-momentum bookkeeping on photons. Writing $L_{\rm
+in}$ and $L_{\rm out}$ for the photon angular momenta along the field axis,
+the transfer to the electron liquid is $\Delta L = L_{\rm in} - L_{\rm out}$.
+
+```{r selection_rules}
+sel <- expand.grid(L_in = c(-1, 1), L_out = c(-1, 1)) %>%
+  mutate(
+    dL      = L_in - L_out,
+    channel = ifelse(dL == 0, "spin-0 (density)", "spin-2 (graviton)"),
+    couples = case_when(
+      dL ==  0 ~ "charge-density excitations",
+      dL == -2 ~ "chiral graviton, chirality -2",
+      dL == +2 ~ "chiral graviton, chirality +2"
+    )
+  )
+
+knitr::kable(sel, digits = 0,
+             col.names = c("L_in", "L_out", "Delta L", "Channel", "Couples to"),
+             caption = "CP-RILS angular momentum bookkeeping.")
+```
+
+At $\nu = 1/3$ the signal appears only in the $\Delta L = -2$ channel.
+**[Established]**
+
+**[Convention]** Mapping optical *handedness* ($\sigma^\pm$) onto photon
+angular momentum $L = \pm 1$ depends on propagation direction. In a
+backscattering geometry the outgoing photon travels along $-z$, which flips
+the handedness-to-$L_z$ assignment. State results in terms of $L$, not
+handedness, or the sign of the reported chirality can invert. This is a real
+source of confusion in the secondary literature.
+
+<br />
+
+# What the CGM is not
+
+The Weinberg-type argument reproduced in `Claude_AI_Science_Chats.txt`
+("Spin-2 Particle and the Mathematics of Gravity") concludes that a consistent
+theory of *massless* spin-2 particles in four dimensions coupling to a
+conserved $T^{\mu\nu}$ must be general relativity. It is worth being explicit
+that **none of the premises hold** for the CGM. **[Established]**
+
+| Property of a fundamental graviton | CGM in an FQH liquid |
+|---|---|
+| Massless | **Gapped** — the mode sits at the magnetoroton gap |
+| Both helicities $\pm 2$ | **Single dominant chirality**, set by the shift |
+| Spin-2 of the Lorentz group $SO(3,1)$ | Charge-2 of the planar rotation group $SO(2)$ |
+| Universal coupling to $T^{\mu\nu}$ | Couples to the internal guiding-centre metric only |
+| Diffeomorphism invariance | Absent; the host lattice and $\mathbf{B}$ pick a frame |
+| Long-range $1/r^2$ force | None; the mode is gapped and neutral |
+| Lorentz invariance | Absent; non-relativistic, strong magnetic field |
+| Self-interacting per Einstein–Hilbert | No analogue established |
+
+So the shared structure is exactly one quantum number. The physics that *is*
+genuinely transferable is the **response to a background metric
+perturbation** — Hall viscosity, $\eta_H = \tfrac{\hbar}{4}\bar{s}\,\bar{n}$
+(Read–Rezayi), is a bona fide geometric response function and is the honest
+bridge between this material and gravitational physics. **[Standard theory]**
+
+<br />
+
+# Connections to the repository
+
+## Genuine technical dependencies
+
+**`Gravitons_Gluons_Branes.md` — measuring gravitational quantities with
+non-gravitational probes.** The proton's gravitational form factors
+$A(t), B(t), D(t)$ are matrix elements of $T^{\mu\nu}$ extracted from DVCS and
+near-threshold $J/\psi$ photoproduction — electromagnetic experiments
+delivering the proton's coupling to a graviton. The CGM measurement is the
+same methodological move in condensed matter: a spin-2 stress-tensor
+observable extracted from an optical probe. In both cases the operator, not
+the force, is what is accessed. This is a real parallel, not decorative.
+
+**Hall viscosity and the $D$-term.** Both are stress-response coefficients
+obtained from the same energy–momentum operator; $\bar{s}$ plays the role in
+FQH that the orbital-spin decomposition plays in Ji's sum rule. Worth a
+side-by-side treatment.
+
+**`Fracton_Codes_in_R.Rmd` — the guiding-centre algebra.** The LLL projected
+density operators close on the GMP algebra, a $W_\infty$ / area-preserving
+diffeomorphism algebra. Dipole-conserving field theories — the parent
+structures of fracton mobility restrictions — arise from the same
+multipole-constraint logic (Gromov; Nguyen–Gromov–Moroz; Prem–Pretko). The
+mobility restriction of a fracton and the LLL constraint that ties an
+excitation's dipole moment to its position are the *same* algebraic
+mechanism. **Genuine dependency.**
+
+Pretko's "emergent gravity from symmetric tensor gauge theory" is a
+*different* and much weaker claim, and should not be merged with the above.
+**Structural analogy, flag as such.**
+
+## Structural analogies only
+
+- **`Quantum_Chromodynamics_in_R.Rmd` — partons.** False cognate, as noted
+  above. Flag explicitly wherever both documents are cited together.
+- **`Gravitation.md` — Scherk's graviphoton.** Both concern spin content of
+  gravitational multiplets, but the graviphoton is a spin-1 field in extended
+  supergravity, and no FQH construction produces it. No dependency.
+- **`Quasiparticle_Rectification.md` — energy transport.** The CGM is neutral
+  and gapped, so it carries energy without charge. Whether that is useful for
+  anything is unestablished; the thermodynamic constraints in that document
+  are unaffected. **[Conjectural]** — do not develop without a concrete
+  transport calculation.
+
+## Frontier items for `QuasiParticles_in_R.Rmd`
+
+Chiral graviton modes have moved into fractional Chern insulators and moiré
+systems during 2026:
+
+- Long, Lu, Wu, Meng, *Phys. Rev. B* **113**, L041108 (2026) — magnetoroton
+  and CGM spectra in fractional Chern insulators.
+- Shen et al., *Phys. Rev. B* **113**, L081403 (2026) — magnetorotons in
+  moiré fractional Chern insulators.
+- CGMs in non-Abelian lattice FQH states (bosonic Harper–Hofstadter at unit
+  filling, Moore–Read ground state), arXiv:2607.06267.
+
+The Moore–Read / anti-Pfaffian discrimination by graviton chirality is the
+sharpest open experimental target: the two candidates at $\nu = 5/2$ carry
+*opposite* graviton chirality, so CP-RILS is in principle a direct
+topological-order discriminator. **[Standard theory, experimentally open]**
+
+<br />
+
+# Roadmap
+
+1. **Sphere-geometry exact diagonalization** of the hard-core ($V_1$)
+   pseudopotential Hamiltonian at $\nu = 1/3$ for $N = 4$–$6$ electrons.
+   $N_\phi = 3(N-1)$, so $N=6$ gives $\binom{16}{6} = 8008$ basis states —
+   comfortably in range for R. Extract the exact Laughlin ground state, the
+   $L = 2$ graviton, and $\bar{S}(q)$ directly. This would make $S_4$ a
+   *computed* rather than *quoted* quantity and would verify the saturation
+   claim numerically. Requires Wigner $3j$ symbols and Haldane
+   pseudopotentials.
+
+2. **Cross-check the Coulomb non-saturation result** (arXiv:2304.14991) at
+   $\nu = 1/3$ by comparing $V_1$-only against a truncated Coulomb
+   pseudopotential set — the same "compare against a simpler control model"
+   pattern used in `QET_Subsystem_Symmetry_in_R.Rmd`.
+
+3. **GMP single-mode approximation dispersion** once $g(r)$ is available from
+   step 1; recover the roton minimum near $q\ell_B \approx 1.4$.
+
+4. **Verify the sum-rule normalization** in §"The chiral spectral sum rules"
+   against Golkar–Nguyen–Son eq. numbering, and remove the **[Convention]**
+   flag once confirmed.
+
+5. **Hall viscosity / $D$-term comparison section** bridging this document
+   and `Gravitons_Gluons_Branes.md`.
+
+<br />
+
+# References
+
+**Experiment**
+
+- Liang, J., Liu, Z., Yang, Z., Huang, Y., Wurstbauer, U., Dean, C. R.,
+  West, K. W., Pfeiffer, L. N., Du, L., & Pinczuk, A. (2024). Evidence for
+  chiral graviton modes in fractional quantum Hall liquids. *Nature*
+  **628**, 78–83.
+- Yang, Z., Wang, Y., Lu, X., Liu, Z., Baldwin, K. W., West, K. W.,
+  Pfeiffer, L. N., Yang, B., Balram, A. C., & Du, L. (2026). Emergent
+  partons in fractional quantum Hall systems. *Nature Physics*,
+  doi:10.1038/s41567-026-03338-9.
+- Pinczuk, A., Dennis, B. S., Pfeiffer, L. N., & West, K. W. (1993).
+  Observation of collective excitations in the fractional quantum Hall
+  effect. *Phys. Rev. Lett.* **70**, 3983.
+
+**Theory**
+
+- Girvin, S. M., MacDonald, A. H., & Platzman, P. M. (1985). Collective-
+  excitation gap in the fractional quantum Hall effect. *Phys. Rev. Lett.*
+  **54**, 581.
+- Haldane, F. D. M. (2011). Geometrical description of the fractional
+  quantum Hall effect. *Phys. Rev. Lett.* **107**, 116801.
+- Golkar, S., Nguyen, D. X., & Son, D. T. (2016). Spectral sum rules and
+  magneto-roton as emergent graviton in the fractional quantum Hall effect.
+  *JHEP* **2016**, 21.
+- Liou, S.-F., Haldane, F. D. M., Yang, K., & Rezayi, E. H. (2019). Chiral
+  gravitons in fractional quantum Hall liquids. *Phys. Rev. Lett.* **123**,
+  146801.
+- Nguyen, D. X., & Son, D. T. (2021). Probing the spin structure of the
+  fractional quantum Hall magnetoroton with polarized Raman scattering.
+  *Phys. Rev. Research* **3**, 023040.
+- Nguyen, D. X., Haldane, F. D. M., Rezayi, E. H., Son, D. T., & Yang, K.
+  (2022). Multiple magnetorotons and spectral sum rules in fractional
+  quantum Hall systems. *Phys. Rev. Lett.* **128**, 246402.
+- Read, N., & Rezayi, E. H. (2011). Hall viscosity, orbital spin, and
+  geometry. *Phys. Rev. B* **84**, 085316.
+- Balram, A. C., Pu, S., et al. — parton excitons and very-high-energy
+  collective states, *Phys. Rev. X* **12**, 021008 (2022).
+
+**Companion documents in this repository**
+
+`Gravitation.md` · `Gravitons_Gluons_Branes.md` ·
+`Quantum_Chromodynamics_in_R.Rmd` · `Fracton_Codes_in_R.Rmd` ·
+`QuasiParticles_in_R.Rmd` · `QET_Subsystem_Symmetry_in_R.Rmd`
+
+---
+
+*AI-assistance disclosure: the corrections, sum-rule bookkeeping, and
+repository cross-references in this document were developed in an
+AI-assisted session. Every numerical claim is either reproduced by the code
+blocks above or flagged for verification against the cited primary source.
+Items still requiring verification are listed in the Roadmap.*
