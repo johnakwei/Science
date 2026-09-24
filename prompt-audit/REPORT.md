@@ -12,10 +12,10 @@
 
 | Group | Findings (high / medium / low-flag) |
 |---|---|
-| 1 – Dated prompt text | 1 / 3 / 0 |
+| 1 – Dated prompt text | 1 / 4 / 0 |
 | 2 – Skill files | none (the repo has none) |
 | 3 – Tool descriptions | none (the code defines no tools) |
-| 4 – Request config & architecture | 0 / 2 / 3 |
+| 4 – Request config & architecture | 0 / 2 / 1 (plus 2 out-of-scope flags) |
 
 **Highest impact:**
 
