@@ -158,10 +158,18 @@ class ArXivTool:
         Returns:
             List of ArXivPaper objects
         """
-        # Construct ArXiv API URL
-        base_url = "http://export.arxiv.org/api/query?"
+        # Construct ArXiv API URL. Each remaining word must match, so drop
+        # filler words that would otherwise have to appear in the paper.
+        stopwords = {'a', 'an', 'and', 'the', 'of', 'in', 'on', 'for', 'to',
+                     'with', 'recent', 'advances', 'new', 'latest'}
+        terms = list(dict.fromkeys(w for w in re.findall(r"[\w-]+", query.lower())
+                                   if w not in stopwords))
+        term_query = ' AND '.join(f'all:{t}' for t in terms)
+        search_query = f'cat:quant-ph AND ({term_query})' if terms else 'cat:quant-ph'
+        
+        base_url = "https://export.arxiv.org/api/query?"
         params = {
-            'search_query': f'cat:quant-ph AND all:{query}',
+            'search_query': search_query,
             'start': 0,
             'max_results': max_results,
             'sortBy': 'submittedDate',
@@ -172,7 +180,13 @@ class ArXivTool:
         
         try:
             # Fetch data from ArXiv
-            with urllib.request.urlopen(url) as response:
+            # arXiv rejects requests without an Atom Accept header or with
+            # the default Python User-Agent (HTTP 406 / 403).
+            request = urllib.request.Request(url, headers={
+                'User-Agent': 'arxiv-quantum-agent/1.0 (https://contextbase.github.io)',
+                'Accept': 'application/atom+xml',
+            })
+            with urllib.request.urlopen(request, timeout=30) as response:
                 xml_data = response.read()
             
             # Parse XML response
@@ -710,7 +724,8 @@ class QuantumPhysicsAgentSystem:
         if not papers:
             return {
                 'summary': 'No papers found for this query.',
-                'papers': [],
+                'scored_papers': [],
+                'analyses': {},
                 'metrics': self.metrics.get_metrics()
             }
         
@@ -940,6 +955,9 @@ async def main_demo():
     print("\n" + "=" * 80)
     print("📄 TOP 3 MOST RELEVANT PAPERS")
     print("=" * 80)
+    
+    if not results['scored_papers']:
+        print("\nNo papers to display.")
     
     for i, (paper, score) in enumerate(results['scored_papers'][:3], 1):
         print(f"\n{i}. {paper.title}")
