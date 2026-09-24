@@ -1,0 +1,180 @@
+--- a/arxiv_quantum_agent.py
++++ b/arxiv_quantum_agent.py
+@@ -391,6 +391,8 @@
+ # AGENT DEFINITIONS
+ # ============================================================================
+ 
++MODEL_NAME = os.environ.get('GEMINI_MODEL', 'gemini-2.5-flash')
++
+ class QuantumAgent:
+     """Base class for all quantum physics agents"""
+     
+@@ -399,33 +401,14 @@
+         self.metrics = metrics_tracker
+         self.rate_limiter = rate_limiter
+         
+-        # Model selection with fallback hierarchy
+-        model_names = [
+-            'gemini-2.5-flash',
+-            'gemini-2.0-flash',
+-            'gemini-flash-latest',
+-            'models/gemini-2.5-flash',
+-            'models/gemini-2.0-flash',
+-            'gemini-1.5-pro',
+-            'models/gemini-1.5-pro'
+-        ]
+-        
+-        self.model = None
+-        for model_name in model_names:
+-            try:
+-                self.model = genai.GenerativeModel(model_name)
+-                logger.info(f"✅ Successfully initialized model: {model_name}")
+-                break
+-            except Exception as e:
+-                logger.warning(f"❌ Could not initialize {model_name}: {e}")
+-                continue
+-        
+-        if self.model is None:
+-            raise ValueError("Could not initialize any Gemini model")
++        # GenerativeModel() does not contact the API, so an unavailable model
++        # surfaces on the first generate_content call, not here.
++        self.model = genai.GenerativeModel(MODEL_NAME)
++        logger.info(f"✅ Initialized model: {MODEL_NAME}")
+         
+         self.retry_handler = RetryHandler()
+     
+-    async def generate_content(self, prompt: str) -> str:
++    async def generate_content(self, prompt: str, generation_config: dict = None) -> str:
+         """Generate content with retry logic and rate limiting"""
+         # Wait for rate limit
+         await self.rate_limiter.wait()
+@@ -434,6 +417,7 @@
+         response = await self.retry_handler.call_with_retry(
+             self.model.generate_content,
+             prompt,
++            generation_config=generation_config,
+             max_retries=3,
+             base_delay=2.0
+         )
+@@ -468,7 +452,7 @@
+         try:
+             # Prepare abstracts for analysis
+             abstracts_text = "\n\n".join([
+-                f"Paper {i+1}: {paper.title}\nAbstract: {paper.abstract[:500]}"
++                f"Paper {i+1}: {paper.title}\nAbstract: {paper.abstract}"
+                 for i, paper in enumerate(papers[:3])
+             ])
+             
+@@ -476,12 +460,7 @@
+ 
+ {abstracts_text}
+ 
+-For each paper, identify:
+-1. Main research contribution
+-2. Key methodology
+-3. Primary findings
+-
+-Format as JSON with paper numbers as keys."""
++For each paper, give its main research contribution, key methodology, and primary findings."""
+             
+             response = await self.generate_content(prompt)
+             
+@@ -542,7 +521,7 @@
+             
+             # Create prompt for batch scoring
+             papers_text = "\n\n".join([
+-                f"Paper {i+1}: {paper.title}\nAbstract: {paper.abstract[:300]}"
++                f"Paper {i+1}: {paper.title}\nAbstract: {paper.abstract}"
+                 for i, paper in enumerate(papers)
+             ])
+             
+@@ -552,21 +531,16 @@
+ 
+ {papers_text}
+ 
+-Return scores as JSON: {{"paper_1": score, "paper_2": score, ...}}
+-Only return the JSON, no other text."""
++Return an object mapping "paper_1", "paper_2", ... to each paper's score."""
+             
+-            response = await self.generate_content(prompt)
++            response = await self.generate_content(
++                prompt,
++                generation_config={"response_mime_type": "application/json"}
++            )
+             
+             # Parse scores
+             try:
+-                # Clean response to extract JSON
+-                json_text = response.strip()
+-                if "```json" in json_text:
+-                    json_text = json_text.split("```json")[1].split("```")[0]
+-                elif "```" in json_text:
+-                    json_text = json_text.split("```")[1].split("```")[0]
+-                
+-                scores = json.loads(json_text)
++                scores = json.loads(response)
+                 
+                 for i, paper in enumerate(papers):
+                     score = scores.get(f"paper_{i+1}", 50.0)
+@@ -604,18 +578,32 @@
+             top_papers_text = "\n\n".join([
+                 f"{i+1}. {paper.title} (Score: {score}/100)\n"
+                 f"   Authors: {', '.join(paper.authors[:3])}\n"
+-                f"   Abstract: {paper.abstract[:200]}..."
++                f"   Abstract: {paper.abstract}"
+                 for i, (paper, score) in enumerate(scored_papers[:3])
+             ])
+             
++            abstract_notes = analyses.get('abstracts', {}).get('analysis', '')
++            math = analyses.get('mathematics', {})
++            equations_text = json.dumps(math.get('equations', {}), indent=2)
++            math_notes = math.get('analysis', '')
++            
+             prompt = f"""Create a comprehensive research summary of these quantum physics papers:
+ 
+ {top_papers_text}
+ 
++Earlier analysis of the abstracts:
++{abstract_notes}
++
++LaTeX equations found in the abstracts:
++{equations_text}
++
++Analysis of those equations:
++{math_notes}
++
+ Include:
+-1. Executive Summary (2-3 sentences)
++1. Executive Summary - a short opening paragraph a researcher can skim
+ 2. Key Findings (bullet points)
+-3. Extracted Equations and their significance
++3. Extracted Equations and their significance - discuss only the equations listed above; if none were found, say so
+ 4. Emerging Trends
+ 5. Recommendations for further reading
+ 
+@@ -714,17 +702,18 @@
+                 'metrics': self.metrics.get_metrics()
+             }
+         
+-        # Step 2: Analyze abstracts
+-        abstract_analysis = await self.abstract_analyzer.process(papers)
+-        
+-        # Step 3: Identify mathematical notation
+-        math_analysis = await self.math_identifier.process(papers)
+-        
+-        # Step 4: Score relevance
++        # Step 2: Score relevance
+         scored_papers = await self.relevance_scorer.process(
+             papers, 
+             self.session['user_preferences']
+         )
++        top_papers = [paper for paper, _ in scored_papers]
++        
++        # Step 3: Analyze abstracts of the highest-scoring papers
++        abstract_analysis = await self.abstract_analyzer.process(top_papers)
++        
++        # Step 4: Identify mathematical notation in the same papers
++        math_analysis = await self.math_identifier.process(top_papers)
+         
+         # Step 5: Generate summary
+         analyses = {
