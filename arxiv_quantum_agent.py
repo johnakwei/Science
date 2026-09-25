@@ -36,6 +36,8 @@ python arxiv_quantum_agent_v2.py
 import asyncio
 import logging
 import re
+import gzip
+import urllib.error
 import urllib.request
 import urllib.parse
 import xml.etree.ElementTree as ET
@@ -146,6 +148,76 @@ class ArXivPaper:
 class ArXivTool:
     """Custom tool for fetching papers from ArXiv API"""
     
+    # export.arxiv.org answers HTTP 406 (sometimes 403/429/503) while it is
+    # throttling a client, often for several minutes at a time. Those statuses
+    # are retried with backoff, and arxiv.org is tried if export.arxiv.org
+    # keeps refusing.
+    API_HOSTS = [
+        "https://export.arxiv.org/api/query",
+        "https://arxiv.org/api/query",
+    ]
+    RETRY_STATUSES = {403, 406, 429, 500, 502, 503, 504}
+    ATTEMPTS_PER_HOST = 4
+    # arXiv's terms of use ask for at least 3 seconds between requests
+    BASE_DELAY_SECONDS = 3
+    REQUEST_HEADERS = {
+        'User-Agent': 'arxiv-quantum-agent/1.0 (+https://github.com/johnakwei/Science)',
+        'Accept': 'application/atom+xml, application/xml;q=0.9, */*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip',
+        'Connection': 'close',
+    }
+    
+    @staticmethod
+    def _read_body(response) -> bytes:
+        """Read a response (or HTTPError) body, decompressing gzip if needed"""
+        data = response.read()
+        if response.headers.get('Content-Encoding', '').lower() == 'gzip':
+            data = gzip.decompress(data)
+        return data
+    
+    @staticmethod
+    def _is_atom_feed(data: bytes) -> bool:
+        return b'<feed' in data[:1000]
+    
+    @staticmethod
+    def _download_feed(query_string: str) -> bytes:
+        """Download the Atom feed, retrying while arXiv is throttling us"""
+        last_error = None
+        for host_index, host in enumerate(ArXivTool.API_HOSTS):
+            if host_index > 0:
+                time.sleep(ArXivTool.BASE_DELAY_SECONDS)
+            url = f"{host}?{query_string}"
+            for attempt in range(1, ArXivTool.ATTEMPTS_PER_HOST + 1):
+                request = urllib.request.Request(url, headers=ArXivTool.REQUEST_HEADERS)
+                try:
+                    with urllib.request.urlopen(request, timeout=30) as response:
+                        return ArXivTool._read_body(response)
+                except urllib.error.HTTPError as e:
+                    # A throttled 406 sometimes still carries a valid feed
+                    body = ArXivTool._read_body(e)
+                    if ArXivTool._is_atom_feed(body):
+                        logger.warning(f"ArXiv returned HTTP {e.code} with a valid feed; using it")
+                        return body
+                    if e.code not in ArXivTool.RETRY_STATUSES:
+                        raise
+                    last_error = e
+                except (urllib.error.URLError, TimeoutError) as e:
+                    last_error = e
+                
+                if attempt < ArXivTool.ATTEMPTS_PER_HOST:
+                    delay = ArXivTool.BASE_DELAY_SECONDS * 2 ** (attempt - 1)
+                    logger.warning(
+                        f"ArXiv request to {host} failed ({last_error}); "
+                        f"retry {attempt}/{ArXivTool.ATTEMPTS_PER_HOST - 1} in {delay}s"
+                    )
+                    time.sleep(delay)
+            logger.warning(f"Giving up on {host} after {ArXivTool.ATTEMPTS_PER_HOST} attempts")
+        raise RuntimeError(
+            f"ArXiv is refusing requests ({last_error}). It throttles clients for "
+            f"a few minutes at a time; wait and try again."
+        )
+    
     @staticmethod
     def fetch_papers(query: str, max_results: int = 5) -> list:
         """
@@ -158,8 +230,6 @@ class ArXivTool:
         Returns:
             List of ArXivPaper objects
         """
-        # Construct ArXiv API URL
-        base_url = "https://export.arxiv.org/api/query?"
         params = {
             'search_query': f'cat:quant-ph AND all:{query}',
             'start': 0,
@@ -168,17 +238,8 @@ class ArXivTool:
             'sortOrder': 'descending'
         }
         
-        url = base_url + urllib.parse.urlencode(params)
-        
         try:
-            # Fetch data from ArXiv. arXiv rejects requests that use the default
-            # Python-urllib User-Agent / Accept headers (HTTP 406), so set both.
-            request = urllib.request.Request(url, headers={
-                'User-Agent': 'arxiv-quantum-agent/1.0 (+https://github.com/johnakwei/Science)',
-                'Accept': 'application/atom+xml, application/xml;q=0.9, */*;q=0.8',
-            })
-            with urllib.request.urlopen(request, timeout=30) as response:
-                xml_data = response.read()
+            xml_data = ArXivTool._download_feed(urllib.parse.urlencode(params))
             
             # Parse XML response
             root = ET.fromstring(xml_data)
