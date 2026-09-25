@@ -159,7 +159,7 @@ class ArXivTool:
             List of ArXivPaper objects
         """
         # Construct ArXiv API URL
-        base_url = "http://export.arxiv.org/api/query?"
+        base_url = "https://export.arxiv.org/api/query?"
         params = {
             'search_query': f'cat:quant-ph AND all:{query}',
             'start': 0,
@@ -171,8 +171,13 @@ class ArXivTool:
         url = base_url + urllib.parse.urlencode(params)
         
         try:
-            # Fetch data from ArXiv
-            with urllib.request.urlopen(url) as response:
+            # Fetch data from ArXiv. arXiv rejects requests that use the default
+            # Python-urllib User-Agent / Accept headers (HTTP 406), so set both.
+            request = urllib.request.Request(url, headers={
+                'User-Agent': 'arxiv-quantum-agent/1.0 (+https://github.com/johnakwei/Science)',
+                'Accept': 'application/atom+xml, application/xml;q=0.9, */*;q=0.8',
+            })
+            with urllib.request.urlopen(request, timeout=30) as response:
                 xml_data = response.read()
             
             # Parse XML response
@@ -711,6 +716,8 @@ class QuantumPhysicsAgentSystem:
             return {
                 'summary': 'No papers found for this query.',
                 'papers': [],
+                'scored_papers': [],
+                'analyses': {},
                 'metrics': self.metrics.get_metrics()
             }
         
@@ -941,7 +948,10 @@ async def main_demo():
     print("📄 TOP 3 MOST RELEVANT PAPERS")
     print("=" * 80)
     
-    for i, (paper, score) in enumerate(results['scored_papers'][:3], 1):
+    top_papers = results.get('scored_papers', [])[:3]
+    if not top_papers:
+        print("\nNo papers to display.")
+    for i, (paper, score) in enumerate(top_papers, 1):
         print(f"\n{i}. {paper.title}")
         print(f"   Authors: {', '.join(paper.authors[:3])}")
         print(f"   Relevance Score: {score}/100")
