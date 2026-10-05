@@ -38,6 +38,27 @@ Computational verification of theoretical principles
 Implementation of quantum field modes  
 Analysis of vacuum fluctuations and zero-point energy  
 
+### Prerequisites:  
+R (version ≥ 4.0.0)  
+RStudio (recommended for R Markdown rendering)  
+A PDF viewer for the mathematics papers  
+
+Required R Packages:
+```r
+install.packages(c(
+  "ggplot2",      # Data visualization
+  "plotly",       # Interactive plots
+  "viridis",      # Color palettes
+  "reshape2",     # Data reshaping
+  "gridExtra",    # Multiple plot arrangements
+  "dplyr",        # Data manipulation
+  "tidyr",        # Data tidying
+  "latex2exp"     # LaTeX expressions in plots
+))
+```
+
+Optional, for the 4×4 verification in the QET document: `Matrix` and `RSpectra`.  
+
 #### 🔬 Quantum Chromodynamics in R
 File: Quantum_Chromodynamics_in_R.Rmd  
 
@@ -127,8 +148,8 @@ File: [Sidon_smoothing_barrier.pdf](Sidon_smoothing_barrier.pdf) (16 pages)
 
 Proves that every certificate in the Hou–Zhao framework, and in a two-sided extension admitting asymmetric kernels, has γ ≥ √((π²+16)/32) = 0.899124…, using an explicit dual multiplier built from the renewal measure of the uniform distribution. It conjectures that the true limit is 2√2/3.  
 
-**Vector-valued smoothing for Sidon sets cannot beat 2√2/3**  
-File: [Sidon_smoothing_limit.pdf](Sidon_smoothing_limit.pdf) (23 pages)  
+**The_limit_of_vector-valued_smoothing_for_Sidon_sets**  
+File: [The_limit_of_vector-valued_smoothing_for_Sidon_sets.pdf](The_limit_of_vector-valued_smoothing_for_Sidon_sets.pdf) (23 pages)  
 
 Determines the limit of the method exactly. Every certificate, symmetric or two-sided, has γ ≥ 2√2/3 = 0.94280904…, and for two-sided certificates this is sharp: the linear kernel ρ(x) = 2x attains 2√2/3 in the continuum limit.  
 
@@ -137,27 +158,6 @@ A single dual multiplier proves the lower bound, via the identity ∫₀^∞ (r(
 A certificate verified in exact rational arithmetic gives h(N) ≤ N^(1/2) + 0.9428096·N^(1/4) + O(1), within 5×10⁻⁷ of the limit  
 The natural semidefinite relaxation that keeps the variance term has the same second-order constant, with explicit feasible points tested up to N = 10⁷  
 Consequence: arguments of this type cannot push the constant below 2√2/3, nor improve the exponent 1/4  
-
-### Prerequisites:  
-R (version ≥ 4.0.0)  
-RStudio (recommended for R Markdown rendering)  
-A PDF viewer for the mathematics papers  
-
-Required R Packages:
-```r
-install.packages(c(
-  "ggplot2",      # Data visualization
-  "plotly",       # Interactive plots
-  "viridis",      # Color palettes
-  "reshape2",     # Data reshaping
-  "gridExtra",    # Multiple plot arrangements
-  "dplyr",        # Data manipulation
-  "tidyr",        # Data tidying
-  "latex2exp"     # LaTeX expressions in plots
-))
-```
-
-Optional, for the 4×4 verification in the QET document: `Matrix` and `RSpectra`.
 
 #### 📚 ArXiv Quantum Physics Triage Agent
 
