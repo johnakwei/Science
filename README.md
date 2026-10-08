@@ -139,13 +139,11 @@ The anisotropy conjecture is falsified: subsystem symmetry blocks bipartite QET 
 A derived selection rule, verified against all 31 candidate observables on a 3×3 lattice and all 793 candidates of size ≤ 4 on a 4×4 lattice  
 The four-party protocol remains genuine LOCC  
 
-It's actually plain text despite the extension.🔢 Erdős Problem 30: A Data Science Analysis of the Maximum Sidon Set Size
-
-A computational and analytic report on Erdős Problem 30, which asks whether the maximum size h(N) of a Sidon set in {1,…,N} satisfies h(N) = N^(1/2) + O(N^ε) for every ε > 0. The problem has been open since Erdős and Turán in 1941 and carries a $1000 prize. The lower half of the conjecture reduces to prime gaps and is believed. The difficulty is the upper bound, where the constant in front of N^(1/4) has improved over the decades but the exponent has not. The report approaches the problem from both sides: a survey of constructions, and a determination of how far the smoothing method for upper bounds can go.
-
 #### 🔢 A Data Science Analysis of Erdős Problem 30 (30 September 2026)
 
 File: [A_Data_Science_Analysis_of_Erdos_Problem_30.pdf](https://github.com/johnakwei/Science/blob/main/A_Data_Science_Analysis_of_Erdos_Problem_30.pdf) (30 pages)
+
+A computational and analytic report on Erdős Problem 30, which asks whether the maximum size h(N) of a Sidon set in {1,…,N} satisfies h(N) = N^(1/2) + O(N^ε) for every ε > 0. The problem has been open since Erdős and Turán in 1941 and carries a $1000 prize. The lower half of the conjecture reduces to prime gaps and is believed. The difficulty is the upper bound, where the constant in front of N^(1/4) has improved over the decades but the exponent has not. The report approaches the problem from both sides: a survey of constructions, and a determination of how far the smoothing method for upper bounds can go.
 
 Consolidates the investigation in seven parts and an appendix. It covers the problem's status and exact values from optimal Golomb rulers, a survey of Singer, Bose and Ruzsa constructions, the numerical and analytic study of the Hou–Zhao smoothing framework, and a relaxation that keeps the variance term the smoothing argument discards. It supersedes Version 3 and incorporates the two companion manuscripts on the smoothing barrier and limit.
 
@@ -158,8 +156,6 @@ Consolidates the investigation in seven parts and an appendix. It covers the pro
 - **Programme status:** Stage 2T(a), the floor of the smoothing framework, is closed. Stage 1 (refuting h(N) = √N + O(1) via largest gaps over multipliers) and Stage 2T(c) (the constraint separating log N from N^c) remain open.
 
 **Consequence:** The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure.
-
-Two notes. The file you uploaded is plain Markdown text with a `.docx` extension, so it won't open in Word as-is. I wrote the PDF link by analogy with your template, so check that it matches the filename you publish.
 
 #### 🔢 Erdős Problem 30: Sidon Sets and Smoothing Certificates
 
@@ -231,23 +227,6 @@ knitr::knit("Quantum_Field_Theory_in_R.Rmd")
 rmarkdown::render("Quantum_Field_Theory_in_R.Rmd")
 ```
 
-#### Document Structure  
-
-All R Markdown documents follow a consistent professional format:  
-- **Abstract/Introduction** - Overview and motivation  
-- **Theoretical Foundation** - Mathematical derivations  
-- **R Implementation** - Computational analysis  
-- **Visualizations** - Interactive plots and figures  
-- **Experimental Verification** - Comparison with data  
-- **Conclusions** - Key insights and implications  
-
-#### Key Features  
-✨ **Mathematical Rigor** - Complete derivations from first principles  
-🎨 **Rich Visualizations** - Interactive plots using ggplot2 and plotly  
-💻 **Reproducible Research** - All code included with detailed comments  
-📊 **Computational Analysis** - Numerical implementations of theoretical concepts  
-🔬 **Experimental Context** - Connection to real-world observations  
-
 #### Applications  
 These documents are valuable for:  
 - **Graduate Students** - Learning advanced quantum physics with computational tools  
@@ -294,21 +273,6 @@ These documents are valuable for:
 - Exact diagonalization  
 - Exact rational arithmetic verification  
 
-#### Future Additions  
-Planned additions to this repository:  
-- String Theory implementations  
-- Quantum Computing applications  
-- Topological Quantum Field Theory  
-- Non-equilibrium dynamics  
-- Many-body quantum systems  
-- Quantum information theory  
-
-#### Contributing  
-Contributions, suggestions, and discussions are welcome! Please feel free to:  
-- Open an issue for questions or suggestions  
-- Submit pull requests for improvements  
-- Share how you've used these documents  
-
 #### Citation  
 If you use these materials in your research or teaching, please cite:  
 
@@ -318,18 +282,6 @@ Author
 John Akwei  
 Senior Data Scientist  
 Specializing in scientific computing, quantum physics, and data visualization  
-License  
-This project is licensed under the MIT License - see the LICENSE file for details.  
-Acknowledgments  
-
-Theoretical foundations based on established physics literature  
-R visualization techniques inspired by the R community  
-Computational methods following best practices in scientific computing  
-
-Contact  
-For questions, collaborations, or discussions:  
-GitHub: @johnakwei  
-Repository: Science  
 
 ## ⭐ Star this repository if you find it useful!  
 Last updated: October 2026
