@@ -139,8 +139,8 @@ The anisotropy conjecture is falsified: subsystem symmetry blocks bipartite QET 
 A derived selection rule, verified against all 31 candidate observables on a 3×3 lattice and all 793 candidates of size ≤ 4 on a 4×4 lattice  
 The four-party protocol remains genuine LOCC  
 
-🔢 A Data Science Analysis of Erdős Problem 30, Version 5 (9 October 2026)
-File: [A_Data_Science_Analysis_of_Erdos_Problem_30_V5.pdf](https://github.com/johnakwei/Science/blob/main/A_Data_Science_Analysis_of_Erdos_Problem_30_V5.pdf) (NN pages)
+#### 🔢 A Data Science Analysis of Erdős Problem 30, Version 6 (26 October 2026)
+File: [A_Data_Science_Analysis_of_Erdos_Problem_30_V6.pdf](https://github.com/johnakwei/Science/blob/main/A_Data_Science_Analysis_of_Erdos_Problem_30_V6.pdf) (NN pages)
 
 A computational and analytic report on Erdős Problem 30, which asks whether the maximum size h(N) of a Sidon set in {1,…,N} satisfies h(N) = N^(1/2) + O(N^ε) for every ε > 0. The problem has been open since Erdős and Turán in 1941 and carries a $1000 prize. The lower half of the conjecture reduces to prime gaps and is believed. The difficulty is the upper bound, where the constant in front of N^(1/4) has improved over the decades but the exponent has not. The report approaches the problem from both sides: a survey of constructions, the first proved results on gaps in algebraic Sidon sets, and a determination of how far the smoothing method for upper bounds can go.
 
@@ -158,24 +158,6 @@ Key Results:
 * Programme status: Stage 2T(a), the floor of the smoothing framework, is closed. Stage 1 (refuting h(N) = √N + O(1) via largest gaps over multipliers, O'Bryant's Open Question 5) is open with its first proved results. Stage 2T(c) (the constraint separating log N from N^c) remains open.
 
 Consequence: The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3, now confirmed by an independent route. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure. On the construction side, the question that remains is whether the best multiplier's largest gap is unbounded relative to q.
-
-#### 🔢 A Data Science Analysis of Erdős Problem 30 (30 September 2026)
-
-File: [A_Data_Science_Analysis_of_Erdos_Problem_30.pdf](https://github.com/johnakwei/Science/blob/main/A_Data_Science_Analysis_of_Erdos_Problem_30.pdf) (30 pages)
-
-A computational and analytic report on Erdős Problem 30, which asks whether the maximum size h(N) of a Sidon set in {1,…,N} satisfies h(N) = N^(1/2) + O(N^ε) for every ε > 0. The problem has been open since Erdős and Turán in 1941 and carries a $1000 prize. The lower half of the conjecture reduces to prime gaps and is believed. The difficulty is the upper bound, where the constant in front of N^(1/4) has improved over the decades but the exponent has not. The report approaches the problem from both sides: a survey of constructions, and a determination of how far the smoothing method for upper bounds can go.
-
-Consolidates the investigation in seven parts and an appendix. It covers the problem's status and exact values from optimal Golomb rulers, a survey of Singer, Bose and Ruzsa constructions, the numerical and analytic study of the Hou–Zhao smoothing framework, and a relaxation that keeps the variance term the smoothing argument discards. It supersedes Version 3 and incorporates the two companion manuscripts on the smoothing barrier and limit.
-
-**Key Results:**
-- **Construction survey (Stage 0):** Across the Singer, Bose and Ruzsa families, in every characteristic, over all prime powers and squares up to N ≈ 4×10⁶, the excess h(N) − √N from cutting a cyclic Sidon set at its largest gap grows logarithmically. It matches a parameter-free extreme-value model, and no family shows power-law growth. The one structural effect found is a Frobenius correlation in characteristic 2, which enlarges the constant but not the growth type.
-- **Exact data:** h(N) is determined exactly for N ≤ 586 via optimal Golomb rulers (OGR-28, length 585). For k = 17 to 28 marks, the optimal ruler equals the best algebraic cut with drops.
-- **The limit of smoothing:** Every certificate in the Hou–Zhao framework, symmetric or two-sided, has γ ≥ 2√2/3 = 0.94280904…. The proof uses a single dual multiplier built from the renewal measure of the uniform distribution. For two-sided certificates the bound is sharp, attained by the linear kernel ρ(x) = 2x.
-- **A new certified constant:** A certificate at resolution m = 512 and boundary depth L = 8, checked in exact rational arithmetic on all 8194 covering inequalities, gives h(N) ≤ N^(1/2) + 0.9428096·N^(1/4) + O(1). This is 6.8×10⁻⁴ below the Hou–Zhao constant 0.94349… and 4.8×10⁻⁷ above the proved limit.
-- **Keeping the variance term:** The level-one moment (pair-level) relaxation has the same second-order constant, with explicit feasible points tested up to N = 10⁷. Three-point constraints lower it only by an amount that shrinks with N, and the four-point level captures a vanishing share of the obstruction in a cyclic model.
-- **Programme status:** Stage 2T(a), the floor of the smoothing framework, is closed. Stage 1 (refuting h(N) = √N + O(1) via largest gaps over multipliers) and Stage 2T(c) (the constraint separating log N from N^c) remain open.
-
-**Consequence:** The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure.
 
 #### 🔢 Erdős Problem 30: Sidon Sets and Smoothing Certificates
 
