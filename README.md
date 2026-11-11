@@ -159,7 +159,7 @@ Key Results:
 
 Consequence: The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3, now confirmed by an independent route. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure. On the construction side, the question that remains is whether the best multiplier's largest gap is unbounded relative to q.
 
-- Certificates for V6 Theorem 5.4 (h(N) ≤ √N + 0.9428095·N^(1/4) + O(1)): https://doi.org/[DOI]
+- Certificates for V6 Theorem 5.4 (h(N) ≤ √N + 0.9428095·N^(1/4) + O(1)): https://doi.org/10.5281/zenodo.24138215
 
 #### 🔢 Erdős Problem 30: Sidon Sets and Smoothing Certificates
 
