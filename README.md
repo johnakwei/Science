@@ -159,6 +159,8 @@ Key Results:
 
 Consequence: The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3, now confirmed by an independent route. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure. On the construction side, the question that remains is whether the best multiplier's largest gap is unbounded relative to q.
 
+- Certificates for V6 Theorem 5.4 (h(N) ≤ √N + 0.9428095·N^(1/4) + O(1)): https://doi.org/[DOI]
+
 #### 🔢 Erdős Problem 30: Sidon Sets and Smoothing Certificates
 
 Two research papers on Erdős Problem 30, which asks whether the maximum size h(N) of a Sidon set in {1,…,N} satisfies h(N) = N^(1/2) + O(N^ε) for every ε > 0. The best current upper bounds have the form h(N) ≤ N^(1/2) + γ·N^(1/4) + O(1), with γ obtained from numerical certificates in the vector-valued smoothing framework of Hou and Zhao. The two papers locate the limit of that method.
