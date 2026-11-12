@@ -159,7 +159,7 @@ Key Results:
 
 Consequence: The evidence points the same way from both directions. The conjecture is probably true, and the construction side will not refute it. On the upper-bound side, the smoothing and Cauchy–Schwarz lineage has reached its exact end at 2√2/3, now confirmed by an independent route. Going below that constant requires more than the one- and two-point statistics of the set, most plausibly its arithmetic structure. On the construction side, the question that remains is whether the best multiplier's largest gap is unbounded relative to q.  
 
-- - An effective four-unit bracket for noncyclic Sidon pair relaxations (with Ariel Williams): https://zenodo.org/records/24015162
+- An effective four-unit bracket for noncyclic Sidon pair relaxations (with Ariel Williams): https://zenodo.org/records/24015162
 - Certificates for V6 Theorem 5.4 (h(N) ≤ √N + 0.9428095·N^(1/4) + O(1)): https://doi.org/10.5281/zenodo.24138215
 - Two-kernel smoothing certificates for Sidon sets: https://zenodo.org/records/24163953  
 
@@ -183,7 +183,7 @@ A certificate verified in exact rational arithmetic gives h(N) ≤ N^(1/2) + 0.9
 The natural semidefinite relaxation that keeps the variance term has the same second-order constant, with explicit feasible points tested up to N = 10⁷  
 Consequence: arguments of this type cannot push the constant below 2√2/3, nor improve the exponent 1/4  
 
-- - An effective four-unit bracket for noncyclic Sidon pair relaxations (with Ariel Williams): https://zenodo.org/records/24015162
+- An effective four-unit bracket for noncyclic Sidon pair relaxations (with Ariel Williams): https://zenodo.org/records/24015162
 - Certificates for V6 Theorem 5.4 (h(N) ≤ √N + 0.9428095·N^(1/4) + O(1)): https://doi.org/10.5281/zenodo.24138215
 - Two-kernel smoothing certificates for Sidon sets: https://zenodo.org/records/24163953
 
