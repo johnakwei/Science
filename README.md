@@ -230,9 +230,5 @@ MIT.
 
 ---
 
-⭐ Star this repository if you find it useful.
-
-*Last updated: November 2026*
-
 ## ⭐ Star this repository if you find it useful!  
-Last updated: October 2026
+Last updated: November 2026
